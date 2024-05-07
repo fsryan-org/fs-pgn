@@ -18,19 +18,21 @@ private value class PGNWhitespaceFSMImpl(private val bufferedSource: BufferedSou
         return bufferedSource.peek().use { peekableSource ->
             var charactersRead = 0
             try {
+                var readingAfterNewline = false
                 while (true) {
                     if (peekableSource.exhausted()) {
                         break
                     }
-                    val char = peekableSource.readUTF8Char()
-                    if (char.isWhitespace()) {
-                        charactersRead++
-                    } else {
+                    var char = peekableSource.readUTF8Char()
+                    if (readingAfterNewline && char == '%') {
+                        charactersRead += peekableSource.consumeUTF8CharsAndStopAfter { it == '\n' }
+                        char = '\n'
+                    }
+                    if (!char.isWhitespace()) {
                         break
                     }
-                    if (peekableSource.exhausted()) {
-                        break
-                    }
+                    charactersRead++
+                    readingAfterNewline = char == '\n'
                 }
                 bufferedSource.incrementByUTF8CharacterCount(charactersRead)
                 PGNFSMResult(charactersRead, Unit)

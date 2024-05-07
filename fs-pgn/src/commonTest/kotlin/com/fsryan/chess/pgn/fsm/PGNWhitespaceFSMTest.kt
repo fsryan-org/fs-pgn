@@ -87,4 +87,41 @@ class PGNWhitespaceFSMTest {
             assertEquals(2, result.charactersRead)
         }
     }
+
+    @Test
+    fun shouldProperlyCountWhitespaceAndLineEscapeMechanism() {
+        Buffer().use { buf ->
+            val input = "\n% This is a bunch of text that should be ignored"
+            buf.write(input.encodeUtf8())
+            val fsmUnderTest = PGNWhitespaceFSM(buf)
+            val result = fsmUnderTest.process(0)
+            assertEquals(input.length, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldProperlyCountWhitespaceAndLineEscapeMechanismWhenTheLineEscapeIsTerminatedWithNewline() {
+        Buffer().use { buf ->
+            val nextLine = "Something else"
+            val input = "\n% This is a bunch of text that should be ignored\n$nextLine"
+            buf.write(input.encodeUtf8())
+            val fsmUnderTest = PGNWhitespaceFSM(buf)
+            val result = fsmUnderTest.process(0)
+            assertEquals(input.length - nextLine.length, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldProperlyCountWhitespaceAndLineEscapeMechanismOnMultipleLines() {
+        Buffer().use { buf ->
+            val nextLine = "Something else"
+            val comment1 = "\n% This is a bunch of text that should be ignored"
+            val comment2 = "\n% This is a bunch more text that should be ignored\n"
+            val input = "$comment1$comment2\n$nextLine"
+            buf.write(input.encodeUtf8())
+            val fsmUnderTest = PGNWhitespaceFSM(buf)
+            val result = fsmUnderTest.process(0)
+            assertEquals(input.length - nextLine.length, result.charactersRead)
+        }
+    }
 }
