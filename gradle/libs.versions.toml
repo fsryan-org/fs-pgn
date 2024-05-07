@@ -1,0 +1,26 @@
+[versions]
+android-gradle = "8.2.2"
+benasher-uuid = "0.8.2"
+dokka = "1.9.20"
+google-ksp = "1.9.22-1.0.17"
+kotlin = "1.9.22"
+kxs = "1.6.3"
+mockative = "2.0.1"
+
+[libraries]
+
+benasher-uuid = { module = "com.benasher44:uuid", version.ref = "benasher-uuid" }
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kxs" }
+
+mockative = { module = "io.mockative:mockative", version.ref = "mockative" }
+mockative-processor = { module = "io.mockative:mockative-processor", version.ref = "mockative" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "android-gradle" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+google-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
+jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.22" }
+kover = { id = "org.jetbrains.kotlinx.kover", version = "0.7.6" }
