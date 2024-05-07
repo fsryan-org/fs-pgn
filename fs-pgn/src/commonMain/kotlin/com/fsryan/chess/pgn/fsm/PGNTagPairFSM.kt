@@ -8,10 +8,10 @@ import okio.BufferedSource
 internal interface PGNTagPairFSM: PGNFSM<Pair<String, String>>
 
 internal fun PGNTagPairFSM(bufferedSource: BufferedSource): PGNTagPairFSM {
-    return PGNTagPairFSMImpl(bufferedSource)
+    return PGNTagPairFSMValue(bufferedSource)
 }
 
-private class PGNTagPairFSMImpl(private val bufferedSource: BufferedSource): PGNTagPairFSM {
+private class PGNTagPairFSMValue(private val bufferedSource: BufferedSource): PGNTagPairFSM {
 
     override fun process(position: Int): PGNFSMResult<Pair<String, String>> {
         var charactersRead = PGNWhitespaceFSM(bufferedSource).process(position).charactersRead

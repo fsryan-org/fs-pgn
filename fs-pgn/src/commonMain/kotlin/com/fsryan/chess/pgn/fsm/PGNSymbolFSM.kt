@@ -22,11 +22,11 @@ import kotlin.jvm.JvmInline
 internal interface PGNSymbolFSM: PGNTokenFSM<String>
 
 internal fun PGNSymbolFSM(bufferedSource: BufferedSource): PGNSymbolFSM {
-    return PGNSymbolFSMImpl(bufferedSource)
+    return PGNSymbolFSMValue(bufferedSource)
 }
 
 @JvmInline
-private value class PGNSymbolFSMImpl(private val bufferedSource: BufferedSource): PGNSymbolFSM {
+private value class PGNSymbolFSMValue(private val bufferedSource: BufferedSource): PGNSymbolFSM {
 
     override fun process(position: Int): PGNFSMResult<String> {
         return bufferedSource.peek().use { peekableSource ->
@@ -53,7 +53,7 @@ private value class PGNSymbolFSMImpl(private val bufferedSource: BufferedSource)
                     }
                     charactersRead++
                 }
-                bufferedSource.readUTF8CharacterCount(charactersRead)
+                bufferedSource.incrementByUTF8CharacterCount(charactersRead)
                 PGNFSMResult(charactersRead, buf.toString())
             } catch (ioe: IOException) {
                 throw PGNParseException(position + charactersRead, "Unexpected end of file while reading symbol", ioe)

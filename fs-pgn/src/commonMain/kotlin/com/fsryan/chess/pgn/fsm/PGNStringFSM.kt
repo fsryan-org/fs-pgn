@@ -22,11 +22,11 @@ internal interface PGNStringFSM: PGNTokenFSM<String> {
 }
 
 internal fun PGNStringFSM(bufferedSource: BufferedSource): PGNStringFSM {
-    return PGNStringFSMImpl(bufferedSource)
+    return PGNStringFSMValue(bufferedSource)
 }
 
 @JvmInline
-private value class PGNStringFSMImpl(private val bufferedSource: BufferedSource): PGNStringFSM {
+private value class PGNStringFSMValue(private val bufferedSource: BufferedSource): PGNStringFSM {
 
     override fun process(position: Int): PGNFSMResult<String> {
         var charactersRead = 0

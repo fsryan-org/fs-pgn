@@ -29,7 +29,7 @@ private value class PGNWhitespaceFSMImpl(private val bufferedSource: BufferedSou
                         break
                     }
                 }
-                bufferedSource.readUTF8CharacterCount(charactersRead)
+                bufferedSource.incrementByUTF8CharacterCount(charactersRead)
                 PGNFSMResult(charactersRead, Unit)
             } catch (ioe: Exception) {
                 throw PGNParseException(position + charactersRead, "Unexpected error while reading whitespace", ioe)

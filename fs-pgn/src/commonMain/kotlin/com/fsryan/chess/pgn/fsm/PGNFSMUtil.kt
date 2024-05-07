@@ -18,7 +18,9 @@ internal fun BufferedSource.readExpectedUTF8Char(
     }
 }
 
-internal fun BufferedSource.readUTF8CharacterCount(count: Int) {
+internal fun BufferedSource.incrememtByUTF8Char() = incrementByUTF8CharacterCount(1)
+
+internal fun BufferedSource.incrementByUTF8CharacterCount(count: Int) {
     for (i in 0 until count) {
         readUtf8CodePoint()
     }

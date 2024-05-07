@@ -35,3 +35,15 @@ class PGNUnexpectedTagValueDelimiter(position: Int, val char: Char): PGNTagPairE
     position = position,
     message = "Expected '\"' to start tag value"
 )
+
+class PGNDuplicateTagException(position: Int, val key: String): PGNTagPairException(
+    position = position,
+    message = "Duplicate tag"
+)
+
+open class PGNMoveTextException(position: Int, message: String): PGNParseException(position, message)
+
+class PGNUnexpectedMoveTextDelimiter(position: Int, val char: Char): PGNMoveTextException(
+    position = position,
+    message = "Unexpected character found while reading move text"
+)

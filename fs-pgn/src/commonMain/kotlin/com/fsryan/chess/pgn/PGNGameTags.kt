@@ -84,7 +84,20 @@ interface PGNGameTags {
      * player name tags.
      */
     val white: String
+
+    fun sevenTagRosterValue(tag: PGNSevenTagRosterTag): String
+
+    fun valueOf(tagName: String): String?
 }
+
+val PGNGameTags.yearString: String
+    get() = year?.toString() ?: "????"
+
+val PGNGameTags.monthOfYearString: String
+    get() = monthOfYear?.toString()?.padStart(2, '0') ?: "??"
+
+val PGNGameTags.dayOfMonthString: String
+    get() = dayOfMonth?.toString()?.padStart(2, '0') ?: "??"
 
 /**
  * If the year, month, and day of the month are known, then this property will
@@ -102,3 +115,62 @@ val PGNGameTags.localDate: LocalDate?
             }
         }
     }
+
+fun PGNGameTags(tagMap: Map<String, String>): PGNGameTags {
+    // TODO: parse all the input values to ensure they are valid
+//    val dateStr = tagMap[PGNSevenTagRosterTag.Date.name] ?: "????.??.??"
+//    val event = tagMap[PGNSevenTagRosterTag.Event.name] ?: "?"
+//    val result = tagMap[PGNSevenTagRosterTag.Result.name]
+//        ?.let { PGNGameResult.fromSerialValue(it) }
+//        ?: PGNGameResult.InProgressAbandonedOrUnknown
+//    val round = tagMap[PGNSevenTagRosterTag.Round.name] ?: "?"
+//    val site = tagMap[PGNSevenTagRosterTag.Site.name] ?: "?"
+//    val white = tagMap[PGNSevenTagRosterTag.White.name] ?: "?"
+
+    return PGNGameTagsData(tagMap = tagMap)
+}
+
+@JsExport
+enum class PGNSevenTagRosterTag {
+    Black, Date, Event, Result, Round, Site, White
+}
+
+private data class PGNGameTagsData(
+    private val tagMap: Map<String, String>
+): PGNGameTags {
+    override val black: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Black)
+    override val dayOfMonth: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
+            .substring(8, 10)
+            .toIntOrNull()
+    override val event: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Event)
+    override val monthOfYear: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
+            .substring(5, 7)
+            .toIntOrNull()
+    override val result: PGNGameResult
+        get() = PGNGameResult.fromSerialValue(sevenTagRosterValue(PGNSevenTagRosterTag.Result))
+    override val round: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Round)
+    override val site: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Site)
+    override val year: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
+            .substring(0, 4)
+            .toIntOrNull()
+    override val white: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.White)
+
+    override fun sevenTagRosterValue(tag: PGNSevenTagRosterTag): String {
+        return tagMap[tag.name] ?: "?"
+    }
+
+    override fun valueOf(tagName: String): String? {
+        if (PGNSevenTagRosterTag.entries.map { it.name }.contains(tagName)) {
+            return sevenTagRosterValue(PGNSevenTagRosterTag.valueOf(tagName))
+        }
+        return tagMap[tagName]
+    }
+}
