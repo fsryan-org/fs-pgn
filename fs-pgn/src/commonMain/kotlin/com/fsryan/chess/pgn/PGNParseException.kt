@@ -22,3 +22,16 @@ class PGNIllegalSymbolStartingCharacterException(position: Int, val char: Char):
     position = position,
     message = "Symbol must start with a letter or digit"
 )
+
+
+open class PGNTagPairException(position: Int, message: String): PGNParseException(position, message)
+
+class PGNUnexpectedTagTerminator(position: Int, val char: Char): PGNTagPairException(
+    position = position,
+    message = "Expected ']' to close tag pair"
+)
+
+class PGNUnexpectedTagValueDelimiter(position: Int, val char: Char): PGNTagPairException(
+    position = position,
+    message = "Expected '\"' to start tag value"
+)

@@ -5,6 +5,7 @@ import com.fsryan.chess.pgn.PGNCannotEscapeCharacterException
 import com.fsryan.chess.pgn.PGNStringControlCharacterFoundException
 import okio.BufferedSource
 import okio.IOException
+import kotlin.jvm.JvmInline
 
 /**
  * A string token is a sequence of zero or more printing characters delimited
@@ -24,7 +25,8 @@ internal fun PGNStringFSM(bufferedSource: BufferedSource): PGNStringFSM {
     return PGNStringFSMImpl(bufferedSource)
 }
 
-private class PGNStringFSMImpl(private val bufferedSource: BufferedSource): PGNStringFSM {
+@JvmInline
+private value class PGNStringFSMImpl(private val bufferedSource: BufferedSource): PGNStringFSM {
 
     override fun process(position: Int): PGNFSMResult<String> {
         var charactersRead = 0
@@ -32,8 +34,7 @@ private class PGNStringFSMImpl(private val bufferedSource: BufferedSource): PGNS
         val buf = StringBuilder()
         try {
             while (true) {
-                val codePoint = bufferedSource.readUtf8CodePoint()
-                when (val char = Char(codePoint)) {
+                when (val char = bufferedSource.readUTF8Char()) {
                     '\\' -> {
                         if (readingEscapedCharacter) {
                             buf.append('\\')

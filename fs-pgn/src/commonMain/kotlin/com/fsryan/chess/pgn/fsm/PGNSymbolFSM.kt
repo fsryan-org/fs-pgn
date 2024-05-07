@@ -5,6 +5,8 @@ import com.fsryan.chess.pgn.PGNParseException
 import com.fsryan.chess.pgn.PGNSymbolTooLongException
 import okio.BufferedSource
 import okio.IOException
+import okio.use
+import kotlin.jvm.JvmInline
 
 /**
  * A symbol token starts with a letter or digit character and is immediately
@@ -23,36 +25,39 @@ internal fun PGNSymbolFSM(bufferedSource: BufferedSource): PGNSymbolFSM {
     return PGNSymbolFSMImpl(bufferedSource)
 }
 
-private class PGNSymbolFSMImpl(private val bufferedSource: BufferedSource): PGNSymbolFSM {
+@JvmInline
+private value class PGNSymbolFSMImpl(private val bufferedSource: BufferedSource): PGNSymbolFSM {
 
     override fun process(position: Int): PGNFSMResult<String> {
-        var charactersRead = 0
-        val buf = StringBuilder()
-        try {
-            while (true) {
-                val codePoint = bufferedSource.readUtf8CodePoint()
-                val char = Char(codePoint)
-                when {
-                    char.isValidStartingChar() -> when (charactersRead) {
-                        255 -> throw PGNSymbolTooLongException(position)
-                        else -> buf.append(char)
-                    }
-                    else -> when (charactersRead) {
-                        0 -> throw PGNIllegalSymbolStartingCharacterException(position, char)
-                        else -> when {
-                            char.isValidContinuationSymbolChar() -> when (charactersRead) {
-                                255 -> throw PGNSymbolTooLongException(position)
-                                else -> buf.append(char)
+        return bufferedSource.peek().use { peekableSource ->
+            var charactersRead = 0
+            val buf = StringBuilder()
+            try {
+                while (true) {
+                    val char = peekableSource.readUTF8Char()
+                    when {
+                        char.isValidStartingChar() -> when (charactersRead) {
+                            255 -> throw PGNSymbolTooLongException(position)
+                            else -> buf.append(char)
+                        }
+                        else -> when (charactersRead) {
+                            0 -> throw PGNIllegalSymbolStartingCharacterException(position, char)
+                            else -> when {
+                                char.isValidContinuationSymbolChar() -> when (charactersRead) {
+                                    255 -> throw PGNSymbolTooLongException(position)
+                                    else -> buf.append(char)
+                                }
+                                else -> break
                             }
-                            else -> break
                         }
                     }
+                    charactersRead++
                 }
-                charactersRead++
+                bufferedSource.readUTF8CharacterCount(charactersRead)
+                PGNFSMResult(charactersRead, buf.toString())
+            } catch (ioe: IOException) {
+                throw PGNParseException(position + charactersRead, "Unexpected end of file while reading symbol", ioe)
             }
-            return PGNFSMResult(charactersRead, buf.toString())
-        } catch (ioe: IOException) {
-            throw PGNParseException(position + charactersRead, "Unexpected end of file while reading string", ioe)
         }
     }
 

@@ -21,7 +21,7 @@ class PGNSymbolFSMTest {
                 fsmUnderTest.process(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
-                assertEquals("Unexpected end of file while reading string", e.message)
+                assertEquals("Unexpected end of file while reading symbol", e.message)
                 assertTrue(e.cause is EOFException)
             }
         }
