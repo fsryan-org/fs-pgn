@@ -1,7 +1,8 @@
 package com.fsryan.chess.pgn.fsm
 
 import com.fsryan.chess.pgn.PGNParseException
-import com.fsryan.chess.pgn.PGNUnescapbleCharacterException
+import com.fsryan.chess.pgn.PGNStringControlCharacterFoundException
+import com.fsryan.chess.pgn.PGNCannotEscapeCharacterException
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
 import okio.EOFException
@@ -17,7 +18,6 @@ class PGNStringFSMTest {
     fun shouldThrowParseExceptionWhenEndOfFileReached() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
-
             try {
                 val fsmUnderTest = PGNStringFSM(buf)
                 fsmUnderTest.process(0)
@@ -39,7 +39,7 @@ class PGNStringFSMTest {
                     val fsmUnderTest = PGNStringFSM(buf)
                     fsmUnderTest.process(0)
                     fail("Should have thrown PGNParseException")
-                } catch (e: PGNParseException) {
+                } catch (e: PGNStringControlCharacterFoundException) {
                     assertEquals("Unexpected control character found while reading string", e.message)
                 }
             }
@@ -55,9 +55,9 @@ class PGNStringFSMTest {
                 val fsmUnderTest = PGNStringFSM(buf)
                 fsmUnderTest.process(0)
                 fail("Should have thrown PGNParseException")
-            } catch (e: PGNUnescapbleCharacterException) {
+            } catch (e: PGNCannotEscapeCharacterException) {
                 assertEquals('a', e.char)
-                assertEquals("Unexpected character found while attempting to read escaped character", e.message)
+                assertEquals("Unexpected character found while attempting to read escaped character in string", e.message)
             }
         }
     }

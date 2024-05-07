@@ -1,5 +1,78 @@
 package com.fsryan.chess.pgn.fsm
 
-internal interface PGNSymbolFSM: PGNTokenFSM<String> {
+import com.fsryan.chess.pgn.PGNIllegalSymbolStartingCharacterException
+import com.fsryan.chess.pgn.PGNParseException
+import com.fsryan.chess.pgn.PGNSymbolTooLongException
+import okio.BufferedSource
+import okio.IOException
 
+/**
+ * A symbol token starts with a letter or digit character and is immediately
+ * followed by a sequence of zero or more symbol continuation characters.
+ * These continuation characters are letter characters ("A-Za-z"), digit
+ * characters ("0-9"), the underscore ("_"), the plus sign ("+"), the
+ * octothorpe sign ("#"), the equal sign ("="), the colon (":"), and the hyphen
+ * ("-"). Symbols are used for a variety of purposes. All characters in a
+ * symbol are significant. A symbol token is terminated just prior to the first
+ * non-symbol character following the symbol character sequence. Currently, a
+ * symbol is limited to a maximum of 255 characters in length.
+ */
+internal interface PGNSymbolFSM: PGNTokenFSM<String>
+
+internal fun PGNSymbolFSM(bufferedSource: BufferedSource): PGNSymbolFSM {
+    return PGNSymbolFSMImpl(bufferedSource)
+}
+
+private class PGNSymbolFSMImpl(private val bufferedSource: BufferedSource): PGNSymbolFSM {
+
+    override fun process(position: Int): PGNFSMResult<String> {
+        var charactersRead = 0
+        val buf = StringBuilder()
+        try {
+            while (true) {
+                val codePoint = bufferedSource.readUtf8CodePoint()
+                val char = Char(codePoint)
+                when {
+                    char.isValidStartingChar() -> when (charactersRead) {
+                        255 -> throw PGNSymbolTooLongException(position)
+                        else -> buf.append(char)
+                    }
+                    else -> when (charactersRead) {
+                        0 -> throw PGNIllegalSymbolStartingCharacterException(position, char)
+                        else -> when {
+                            char.isValidContinuationSymbolChar() -> when (charactersRead) {
+                                255 -> throw PGNSymbolTooLongException(position)
+                                else -> buf.append(char)
+                            }
+                            else -> break
+                        }
+                    }
+                }
+                charactersRead++
+            }
+            return PGNFSMResult(charactersRead, buf.toString())
+        } catch (ioe: IOException) {
+            throw PGNParseException(position + charactersRead, "Unexpected end of file while reading string", ioe)
+        }
+    }
+
+    private fun Char.isValidStartingChar(): Boolean {
+        if (code < 48) {
+            return false
+        }
+        if (code in 58..64) {
+            return false
+        }
+        if (code in 91..96) {
+            return false
+        }
+        if (code > 122) {
+            return false
+        }
+        return true
+    }
+
+    private fun Char.isValidContinuationSymbolChar(): Boolean {
+        return this == '_' || this == '+' || this == '#' || this == '=' || this == ':' || this == '-'
+    }
 }

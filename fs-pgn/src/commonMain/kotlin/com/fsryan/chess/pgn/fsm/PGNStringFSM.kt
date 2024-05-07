@@ -1,7 +1,8 @@
 package com.fsryan.chess.pgn.fsm
 
 import com.fsryan.chess.pgn.PGNParseException
-import com.fsryan.chess.pgn.PGNUnescapbleCharacterException
+import com.fsryan.chess.pgn.PGNCannotEscapeCharacterException
+import com.fsryan.chess.pgn.PGNStringControlCharacterFoundException
 import okio.BufferedSource
 import okio.IOException
 
@@ -50,17 +51,10 @@ private class PGNStringFSMImpl(private val bufferedSource: BufferedSource): PGNS
                         }
                     }
                     else -> when (CharCategory.CONTROL.contains(char)) {
-                        true -> throw PGNParseException(
-                            position = position + charactersRead,
-                            message = "Unexpected control character found while reading string"
-                        )
+                        true -> throw PGNStringControlCharacterFoundException(position + charactersRead, char = char)
                         false -> {
                             if (readingEscapedCharacter) {
-                                throw PGNUnescapbleCharacterException(
-                                    position = position + charactersRead,
-                                    char = char,
-                                    message = "Unexpected character found while attempting to read escaped character"
-                                )
+                                throw PGNCannotEscapeCharacterException(position + charactersRead, char = char)
                             }
                             buf.append(char)
                         }
