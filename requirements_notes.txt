@@ -55,7 +55,15 @@ adjacent tokens by white space characters.  (White space characters include
 space, newline, and tab characters.)  Some tokens are self delimiting and do
 not require white space characters.
 
-
+A string token is a sequence of zero or more printing characters delimited by a
+pair of quote characters (ASCII decimal value 34, hexadecimal value 0x22).  An
+empty string is represented by two adjacent quotes.  (Note: an apostrophe is
+not a quote.)  A quote inside a string is represented by the backslash
+immediately followed by a quote.  A backslash inside a string is represented by
+two adjacent backslashes.  Strings are commonly used as tag pair values (see
+below).  Non-printing characters like newline and tab are not permitted inside
+of strings.  A string token is terminated by its closing quote.  Currently, a
+string is limited to a maximum of 255 characters of data.
 
 An integer token is a sequence of one or more decimal digit characters.  It is
 a special case of the more general "symbol" token class described below.

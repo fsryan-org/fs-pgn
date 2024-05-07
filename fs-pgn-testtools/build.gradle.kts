@@ -42,7 +42,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":fs-pgn-api-kxs"))
+            api(project(":fs-pgn"))
         }
     }
 }

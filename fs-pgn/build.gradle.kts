@@ -6,7 +6,6 @@ import fsryan.shouldConfigureJvm
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.dokka)
 //    alias(libs.plugins.kover)
 }
@@ -47,11 +46,16 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":fs-pgn-api"))
-            api(libs.kotlinx.serialization.json)
+            api(libs.kotlinx.datetime)
+            api(libs.okio)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.okio.fakefilesystem)
+        }
+
+        jsMain.dependencies {
+            implementation(libs.okio.nodefilesystem)
         }
     }
 }
