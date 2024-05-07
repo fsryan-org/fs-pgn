@@ -343,6 +343,292 @@ All possible examples:
 
 [Result "*"]
 
+8.2: Movetext section
+
+The movetext section is composed of chess moves, move number indications,
+optional annotations, and a single concluding game termination marker.
+
+Because illegal moves are not real chess moves, they are not permitted in PGN
+movetext.  They may appear in commentary, however.  One would hope that illegal
+moves are relatively rare in games worthy of recording.
+
+8.2.1: Movetext line justification
+
+In PGN import format, tokens in the movetext do not require any specific line
+justification.
+
+In PGN export format, tokens in the movetext are placed left justified on
+successive text lines each of which has less than 80 printing characters.  As
+many tokens as possible are placed on a line with the remainder appearing on
+successive lines.  A single space character appears between any two adjacent
+symbol tokens on the same line in the movetext.  As with the tag pair section,
+a single empty line follows the last line of data to conclude the movetext
+section.
+
+Neither the first or the last character on an export format PGN line is a
+space.  (This may change in the case of commentary; this area is currently
+under development.)
+
+8.2.2: Movetext move number indications
+
+A move number indication is composed of one or more adjacent digits (an integer
+token) followed by zero or more periods.  The integer portion of the indication
+gives the move number of the immediately following white move (if present) and
+also the immediately following black move (if present).
+
+8.2.2.1: Import format move number indications
+
+PGN import format does not require move number indications.  It does not
+prohibit superfluous move number indications anywhere in the movetext as long
+as the move numbers are correct.
+
+PGN import format move number indications may have zero or more period
+characters following the digit sequence that gives the move number; one or more
+white space characters may appear between the digit sequence and the period(s).
+
+8.2.2.2: Export format move number indications
+
+There are two export format move number indication formats, one for use
+appearing immediately before a white move element and one for use appearing
+immediately before a black move element.  A white move number indication is
+formed from the integer giving the fullmove number with a single period
+character appended.  A black move number indication is formed from the integer
+giving the fullmove number with three period characters appended.
+
+All white move elements have a preceding move number indication.  A black move
+element has a preceding move number indication only in two cases: first, if
+there is intervening annotation or commentary between the black move and the
+previous white move; and second, if there is no previous white move in the
+special case where a game starts from a position where Black is the active
+player.
+
+There are no other cases where move number indications appear in PGN export
+format.
+
+8.2.3: Movetext SAN (Standard Algebraic Notation)
+
+SAN (Standard Algebraic Notation) is a representation standard for chess moves
+using the ASCII Latin alphabet.
+
+Examples of SAN recorded games are found throughout most modern chess
+publications.  SAN as presented in this document uses English language single
+character abbreviations for chess pieces, although this is easily changed in
+the source.  English is chosen over other languages because it appears to be
+the most widely recognized.
+
+An alternative to SAN is FAN (Figurine Algebraic Notation).  FAN uses miniature
+piece icons instead of single letter piece abbreviations.  The two notations
+are otherwise identical.
+
+8.2.3.1: Square identification
+
+SAN identifies each of the sixty four squares on the chessboard with a unique
+two character name.  The first character of a square identifier is the file of
+the square; a file is a column of eight squares designated by a single lower
+case letter from "a" (leftmost or queenside) up to and including "h" (rightmost
+or kingside).  The second character of a square identifier is the rank of the
+square; a rank is a row of eight squares designated by a single digit from "1"
+(bottom side [White's first rank]) up to and including "8" (top side [Black's
+first rank]).  The initial squares of some pieces are: white queen rook at a1,
+white king at e1, black queen knight pawn at b7, and black king rook at h8.
+
+8.2.3.2: Piece identification
+
+SAN identifies each piece by a single upper case letter.  The standard English
+values: pawn = "P", knight = "N", bishop = "B", rook = "R", queen = "Q", and
+king = "K".
+
+The letter code for a pawn is not used for SAN moves in PGN export format
+movetext.  However, some PGN import software disambiguation code may allow for
+the appearance of pawn letter codes.  Also, pawn and other piece letter codes
+are needed for use in some tag pair and annotation constructs.
+
+It is admittedly a bit chauvinistic to select English piece letters over those
+from other languages.  There is a slight justification in that English is a de
+facto universal second language among most chessplayers and program users.  It
+is probably the best that can be done for now.  A later section of this
+document gives alternative piece letters, but these should be used only for
+local presentation software and not for archival storage or for dynamic
+interchange among programs.
+
+8.2.3.3: Basic SAN move construction
+
+A basic SAN move is given by listing the moving piece letter (omitted for
+pawns) followed by the destination square.  Capture moves are denoted by the
+lower case letter "x" immediately prior to the destination square; pawn
+captures include the file letter of the originating square of the capturing
+pawn immediately prior to the "x" character.
+
+SAN kingside castling is indicated by the sequence "O-O"; queenside castling is
+indicated by the sequence "O-O-O".  Note that the upper case letter "O" is
+used, not the digit zero.  The use of a zero character is not only incompatible
+with traditional text practices, but it can also confuse parsing algorithms
+which also have to understand about move numbers and game termination markers.
+Also note that the use of the letter "O" is consistent with the practice of
+having all chess move symbols start with a letter; also, it follows the
+convention that all non-pwn move symbols start with an upper case letter.
+
+En passant captures do not have any special notation; they are formed as if the
+captured pawn were on the capturing pawn's destination square.  Pawn promotions
+are denoted by the equal sign "=" immediately following the destination square
+with a promoted piece letter (indicating one of knight, bishop, rook, or queen)
+immediately following the equal sign.  As above, the piece letter is in upper
+case.
+
+8.2.3.4: Disambiguation
+
+In the case of ambiguities (multiple pieces of the same type moving to the same
+square), the first appropriate disambiguating step of the three following steps
+is taken:
+
+First, if the moving pieces can be distinguished by their originating files,
+the originating file letter of the moving piece is inserted immediately after
+the moving piece letter.
+
+Second (when the first step fails), if the moving pieces can be distinguished
+by their originating ranks, the originating rank digit of the moving piece is
+inserted immediately after the moving piece letter.
+
+Third (when both the first and the second steps fail), the two character square
+coordinate of the originating square of the moving piece is inserted
+immediately after the moving piece letter.
+
+Note that the above disambiguation is needed only to distinguish among moves of
+the same piece type to the same square; it is not used to distinguish among
+attacks of the same piece type to the same square.  An example of this would be
+a position with two white knights, one on square c3 and one on square g1 and a
+vacant square e2 with White to move.  Both knights attack square e2, and if
+both could legally move there, then a file disambiguation is needed; the
+(nonchecking) knight moves would be "Nce2" and "Nge2".  However, if the white
+king were at square e1 and a black bishop were at square b4 with a vacant
+square d2 (thus an absolute pin of the white knight at square c3), then only
+one white knight (the one at square g1) could move to square e2: "Ne2".
+
+8.2.3.5: Check and checkmate indication characters
+
+If the move is a checking move, the plus sign "+" is appended as a suffix to
+the basic SAN move notation; if the move is a checkmating move, the octothorpe
+sign "#" is appended instead.
+
+Neither the appearance nor the absence of either a check or checkmating
+indicator is used for disambiguation purposes.  This means that if two (or
+more) pieces of the same type can move to the same square the differences in
+checking status of the moves does not allieviate the need for the standard rank
+and file disabiguation described above.  (Note that a difference in checking
+status for the above may occur only in the case of a discovered check.)
+
+Neither the checking or checkmating indicators are considered annotation as
+they do not communicate subjective information.  Therefore, they are
+qualitatively different from move suffix annotations like "!" and "?".
+Subjective move annotations are handled using Numeric Annotation Glyphs as
+described in a later section of this document.
+
+There are no special markings used for double checks or discovered checks.
+
+There are no special markings used for drawing moves.
+
+8.2.3.6: SAN move length
+
+SAN moves can be as short as two characters (e.g., "d4"), or as long as seven
+characters (e.g., "Qa6xb7#", "fxg1=Q+").  The average SAN move length seen in
+realistic games is probably just fractionally longer than three characters.  If
+the SAN rules seem complicated, be assured that the earlier notation systems of
+LEN (Long English Notation) and EDN (English Descriptive Notation) are much
+more complex, and that LAN (Long Algebraic Notation, the predecessor of SAN) is
+unnecessarily bulky.
+
+8.2.3.8: SAN move suffix annotations
+
+Import format PGN allows for the use of traditional suffix annotations for
+moves.  There are exactly six such annotations available: "!", "?", "!!", "!?",
+"?!", and "??".  At most one such suffix annotation may appear per move, and if
+present, it is always the last part of the move symbol.
+
+When exported, a move suffix annotation is translated into the corresponding
+Numeric Annotation Glyph as described in a later section of this document.  For
+example, if the single move symbol "Qxa8?" appears in an import format PGN
+movetext, it would be replaced with the two adjacent symbols "Qxa8 $2".
+
+8.2.4: Movetext NAG (Numeric Annotation Glyph)
+
+An NAG (Numeric Annotation Glyph) is a movetext element that is used to
+indicate a simple annotation in a language independent manner.  An NAG is
+formed from a dollar sign ("$") with a non-negative decimal integer suffix.
+The non-negative integer must be from zero to 255 in value.
+
+8.2.5: Movetext RAV (Recursive Annotation Variation)
+
+An RAV (Recursive Annotation Variation) is a sequence of movetext containing
+one or more moves enclosed in parentheses.  An RAV is used to represent an
+alternative variation.  The alternate move sequence given by an RAV is one that
+may be legally played by first unplaying the move that appears immediately
+prior to the RAV.  Because the RAV is a recursive construct, it may be nested.
+
+8.2.3.6: SAN move length
+
+SAN moves can be as short as two characters (e.g., "d4"), or as long as seven
+characters (e.g., "Qa6xb7#", "fxg1=Q+").  The average SAN move length seen in
+realistic games is probably just fractionally longer than three characters.  If
+the SAN rules seem complicated, be assured that the earlier notation systems of
+LEN (Long English Notation) and EDN (English Descriptive Notation) are much
+more complex, and that LAN (Long Algebraic Notation, the predecessor of SAN) is
+unnecessarily bulky.
+
+8.2.3.7: Import and export SAN
+
+PGN export format always uses the above canonical SAN to represent moves in the
+movetext section of a PGN game.  Import format is somewhat more relaxed and it
+makes allowances for moves that do not conform exactly to the canonical format.
+However, these allowances may differ among different PGN reader programs.  Only
+data appearing in export format is in all cases guaranteed to be importable
+into all PGN readers.
+
+There are a number of suggested guidelines for use with implementing PGN reader
+software for permitting non-canonical SAN move representation.  The idea is to
+have a PGN reader apply various transformations to attempt to discover the move
+that is represented by non-canonical input.  Some suggested transformations
+include: letter case remapping, capture indicator insertion, check indicator
+insertion, and checkmate indicator insertion.
+
+8.2.3.8: SAN move suffix annotations
+
+Import format PGN allows for the use of traditional suffix annotations for
+moves.  There are exactly six such annotations available: "!", "?", "!!", "!?",
+"?!", and "??".  At most one such suffix annotation may appear per move, and if
+present, it is always the last part of the move symbol.
+
+When exported, a move suffix annotation is translated into the corresponding
+Numeric Annotation Glyph as described in a later section of this document.  For
+example, if the single move symbol "Qxa8?" appears in an import format PGN
+movetext, it would be replaced with the two adjacent symbols "Qxa8 $2".
+
+8.2.4: Movetext NAG (Numeric Annotation Glyph)
+
+An NAG (Numeric Annotation Glyph) is a movetext element that is used to
+indicate a simple annotation in a language independent manner.  An NAG is
+formed from a dollar sign ("$") with a non-negative decimal integer suffix.
+The non-negative integer must be from zero to 255 in value.
+
+8.2.5: Movetext RAV (Recursive Annotation Variation)
+
+An RAV (Recursive Annotation Variation) is a sequence of movetext containing
+one or more moves enclosed in parentheses.  An RAV is used to represent an
+alternative variation.  The alternate move sequence given by an RAV is one that
+may be legally played by first unplaying the move that appears immediately
+prior to the RAV.  Because the RAV is a recursive construct, it may be nested.
+
+8.2.6: Game Termination Markers
+
+Each movetext section has exactly one game termination marker; the marker
+always occurs as the last element in the movetext.  The game termination marker
+is a symbol that is one of the following four values: "1-0" (White wins), "0-1"
+(Black wins), "1/2-1/2" (drawn game), and "*" (game in progress, result
+unknown, or game abandoned).  Note that the digit zero is used in the above;
+not the upper case letter "O".  The game termination marker appearing in the
+movetext of a game must match the value of the game's Result tag pair.  (While
+the marker appears as a string in the Result tag, it appears as a symbol
+without quotes in the movetext.)
+
 12: PGN collating sequence
 
 There is a standard sorting order for PGN games within a file.  This collation

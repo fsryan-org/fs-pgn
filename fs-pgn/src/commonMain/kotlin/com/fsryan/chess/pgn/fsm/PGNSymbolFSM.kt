@@ -52,6 +52,9 @@ private value class PGNSymbolFSMValue(private val bufferedSource: BufferedSource
                         }
                     }
                     charactersRead++
+                    if (peekableSource.exhausted()) {
+                        break
+                    }
                 }
                 bufferedSource.incrementByUTF8CharacterCount(charactersRead)
                 PGNFSMResult(charactersRead, buf.toString())

@@ -47,3 +47,11 @@ class PGNUnexpectedMoveTextDelimiter(position: Int, val char: Char): PGNMoveText
     position = position,
     message = "Unexpected character found while reading move text"
 )
+
+
+open class PGNIntegerException(position: Int, message: String): PGNParseException(position, message)
+
+class PGNInvalidIntegerStartingCharException(position: Int, val char: Char): PGNIntegerException(
+    position = position,
+    message = "Expected non-zero digit character but found '$char'"
+)

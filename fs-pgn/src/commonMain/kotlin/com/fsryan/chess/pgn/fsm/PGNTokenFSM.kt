@@ -7,5 +7,4 @@ package com.fsryan.chess.pgn.fsm
  * characters include space, newline, and tab characters.) Some tokens are self
  * delimiting and do not require white space characters.
  */
-internal interface PGNTokenFSM<out T: Any>: PGNFSM<T> {
-}
+internal interface PGNTokenFSM<out T: Any>: PGNFSM<T>

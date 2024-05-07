@@ -15,17 +15,20 @@ fun PGNWhitespaceFSM(bufferedSource: BufferedSource): PGNWhitespaceFSM {
 private value class PGNWhitespaceFSMImpl(private val bufferedSource: BufferedSource): PGNWhitespaceFSM {
 
     override fun process(position: Int): PGNFSMResult<Unit> {
-        return bufferedSource.peek().use { peekableBuffer ->
+        return bufferedSource.peek().use { peekableSource ->
             var charactersRead = 0
             try {
                 while (true) {
-                    if (peekableBuffer.exhausted()) {
+                    if (peekableSource.exhausted()) {
                         break
                     }
-                    val char = peekableBuffer.readUTF8Char()
+                    val char = peekableSource.readUTF8Char()
                     if (char.isWhitespace()) {
                         charactersRead++
                     } else {
+                        break
+                    }
+                    if (peekableSource.exhausted()) {
                         break
                     }
                 }

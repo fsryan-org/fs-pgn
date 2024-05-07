@@ -116,19 +116,7 @@ val PGNGameTags.localDate: LocalDate?
         }
     }
 
-fun PGNGameTags(tagMap: Map<String, String>): PGNGameTags {
-    // TODO: parse all the input values to ensure they are valid
-//    val dateStr = tagMap[PGNSevenTagRosterTag.Date.name] ?: "????.??.??"
-//    val event = tagMap[PGNSevenTagRosterTag.Event.name] ?: "?"
-//    val result = tagMap[PGNSevenTagRosterTag.Result.name]
-//        ?.let { PGNGameResult.fromSerialValue(it) }
-//        ?: PGNGameResult.InProgressAbandonedOrUnknown
-//    val round = tagMap[PGNSevenTagRosterTag.Round.name] ?: "?"
-//    val site = tagMap[PGNSevenTagRosterTag.Site.name] ?: "?"
-//    val white = tagMap[PGNSevenTagRosterTag.White.name] ?: "?"
-
-    return PGNGameTagsData(tagMap = tagMap)
-}
+fun PGNGameTags(tagMap: Map<String, String>): PGNGameTags = PGNGameTagsData(tagMap = tagMap)
 
 @JsExport
 enum class PGNSevenTagRosterTag {
