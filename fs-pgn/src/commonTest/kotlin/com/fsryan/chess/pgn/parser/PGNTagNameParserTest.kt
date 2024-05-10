@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.fsm
+package com.fsryan.chess.pgn.parser
 
 import com.fsryan.chess.pgn.PGNIllegalSymbolStartingCharacterException
 import com.fsryan.chess.pgn.PGNParseException
@@ -11,14 +11,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class PGNSymbolFSMTest {
+class PGNTagNameParserTest {
+    
+    val parserUnderTest = PGNTagNameParser()
+    
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReached() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                val fsmUnderTest = PGNSymbolFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading symbol", e.message)
@@ -33,8 +35,7 @@ class PGNSymbolFSMTest {
             Buffer().use { buf ->
                 buf.write(invalidChar.toString().encodeUtf8())
                 try {
-                    val fsmUnderTest = PGNSymbolFSM(buf)
-                    fsmUnderTest.process(0)
+                    parserUnderTest.parse(buf, 0)
                     fail("Should have thrown PGNParseException")
                 } catch (e: PGNIllegalSymbolStartingCharacterException) {
                     assertEquals(invalidChar, e.char)
@@ -49,8 +50,7 @@ class PGNSymbolFSMTest {
         Buffer().use { buf ->
             val expected = "aLPHA"
             buf.write("$expected ".encodeUtf8())
-            val fsmUnderTest = PGNSymbolFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -60,8 +60,7 @@ class PGNSymbolFSMTest {
         Buffer().use { buf ->
             val expected = "AlphaAgain"
             buf.write("$expected ".encodeUtf8())
-            val fsmUnderTest = PGNSymbolFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -71,8 +70,7 @@ class PGNSymbolFSMTest {
         Buffer().use { buf ->
             val expected = "1AlphaAgain"
             buf.write("$expected ".encodeUtf8())
-            val fsmUnderTest = PGNSymbolFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -83,8 +81,7 @@ class PGNSymbolFSMTest {
             Buffer().use { buf ->
                 val expected = "symb${validNonAlphaNumericChar}ol"
                 buf.write("$expected ".encodeUtf8())
-                val fsmUnderTest = PGNSymbolFSM(buf)
-                val actual = fsmUnderTest.process(0)
+                val actual = parserUnderTest.parse(buf, 0)
                 assertEquals(expected.length, actual.charactersRead)
             }
         }

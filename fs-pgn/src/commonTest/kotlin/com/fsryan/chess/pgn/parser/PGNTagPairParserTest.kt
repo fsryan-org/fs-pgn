@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.fsm
+package com.fsryan.chess.pgn.parser
 
 import com.fsryan.chess.pgn.PGNParseException
 import com.fsryan.chess.pgn.PGNUnexpectedTagTerminator
@@ -12,15 +12,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class PGNTagPairFSMTest {
+class PGNTagPairParserTest {
+    
+    val parserUnderTest = PGNTagPairParser()
 
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReachedWhileReadingSymbol() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                val fsmUnderTest = PGNTagPairFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading symbol", e.message)
@@ -34,8 +35,7 @@ class PGNTagPairFSMTest {
         Buffer().use { buf ->
             buf.write("KEY ".encodeUtf8())
             try {
-                val fsmUnderTest = PGNTagPairFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected error while reading tag pair", e.message)
@@ -49,8 +49,7 @@ class PGNTagPairFSMTest {
         Buffer().use { buf ->
             buf.write("KEY \"Value\"".encodeUtf8())
             try {
-                val fsmUnderTest = PGNTagPairFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected error while reading tag pair", e.message)
@@ -67,8 +66,7 @@ class PGNTagPairFSMTest {
             val expected = expectedKey to expectedValue
             val input = "$expectedKey \"$expectedValue\"]"
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairFSM(buf)
-            val result = fsmUnderTest.process(0)
+            val result = parserUnderTest.parse(buf, 0)
             assertEquals(input.length, result.charactersRead)
             assertEquals(expected, result.value)
         }
@@ -82,8 +80,7 @@ class PGNTagPairFSMTest {
             val expected = expectedKey to expectedValue
             val input = "\n\t $expectedKey\n\t \"$expectedValue\"\n\t ]"
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairFSM(buf)
-            val result = fsmUnderTest.process(0)
+            val result = parserUnderTest.parse(buf, 0)
             assertEquals(input.length, result.charactersRead)
             assertEquals(expected, result.value)
         }
@@ -97,8 +94,7 @@ class PGNTagPairFSMTest {
             val input = "$expectedKey \"$expectedValue\"}"
             buf.write(input.encodeUtf8())
             try {
-                val fsmUnderTest = PGNTagPairFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNUnexpectedTagTerminator")
             } catch (e: PGNUnexpectedTagTerminator) {
                 assertEquals(input.length - 1, e.position)
@@ -115,8 +111,7 @@ class PGNTagPairFSMTest {
             val input = "$expectedKey =\"$expectedValue\"]"
             buf.write(input.encodeUtf8())
             try {
-                val fsmUnderTest = PGNTagPairFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNUnexpectedTagValueDelimiter")
             } catch (e: PGNUnexpectedTagValueDelimiter) {
                 assertEquals(4, e.position)

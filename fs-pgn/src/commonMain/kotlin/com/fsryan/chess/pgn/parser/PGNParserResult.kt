@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.fsm
+package com.fsryan.chess.pgn.parser
 
 /**
  * The result of a PGN Finite State Machine completing its work. This result

@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.fsm
+package com.fsryan.chess.pgn.parser
 
 import com.fsryan.chess.pgn.PGNParseException
 import com.fsryan.chess.pgn.PGNStringControlCharacterFoundException
@@ -12,15 +12,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class PGNStringFSMTest {
+class PGNTagValueParserTest {
+
+    val parserUnderTest = PGNTagValueParser()
 
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReached() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                val fsmUnderTest = PGNStringFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading string", e.message)
@@ -36,8 +37,7 @@ class PGNStringFSMTest {
                 buf.write(Char(controlChar).toString().encodeUtf8())
 
                 try {
-                    val fsmUnderTest = PGNStringFSM(buf)
-                    fsmUnderTest.process(0)
+                    parserUnderTest.parse(buf, 0)
                     fail("Should have thrown PGNParseException")
                 } catch (e: PGNStringControlCharacterFoundException) {
                     assertEquals("Unexpected control character found while reading string", e.message)
@@ -52,8 +52,7 @@ class PGNStringFSMTest {
             buf.write("\\a".encodeUtf8())
 
             try {
-                val fsmUnderTest = PGNStringFSM(buf)
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNCannotEscapeCharacterException) {
                 assertEquals('a', e.char)
@@ -66,8 +65,7 @@ class PGNStringFSMTest {
     fun shouldReturnEmptyOnEmptyString() {
         Buffer().use { buf ->
             buf.write("\"".encodeUtf8())
-            val fsmUnderTest = PGNStringFSM(buf)
-            val output = fsmUnderTest.process(0)
+            val output = parserUnderTest.parse(buf, 0)
             assertEquals(1, output.charactersRead)
             assertEquals("", output.value)
         }
@@ -78,8 +76,7 @@ class PGNStringFSMTest {
         val expected = "This is a full string. Isn't that great?"
         Buffer().use { buf ->
             buf.write("$expected\"".encodeUtf8())
-            val fsmUnderTest = PGNStringFSM(buf)
-            val output = fsmUnderTest.process(0)
+            val output = parserUnderTest.parse(buf, 0)
             assertEquals(expected.length + 1, output.charactersRead)    // <-- the final " should be read
             assertEquals(expected, output.value)
         }
@@ -91,8 +88,7 @@ class PGNStringFSMTest {
         val expected = "This is a full string with a \". Isn't that great?"
         Buffer().use { buf ->
             buf.write("$input\"".encodeUtf8())
-            val fsmUnderTest = PGNStringFSM(buf)
-            val output = fsmUnderTest.process(0)
+            val output = parserUnderTest.parse(buf, 0)
             assertEquals(input.length + 1, output.charactersRead)    // <-- the final " should be read
             assertEquals(expected, output.value)
         }
@@ -104,8 +100,7 @@ class PGNStringFSMTest {
         val expected = "This is a full string with a \\. Isn't that great?"
         Buffer().use { buf ->
             buf.write("$input\"".encodeUtf8())
-            val fsmUnderTest = PGNStringFSM(buf)
-            val output = fsmUnderTest.process(0)
+            val output = parserUnderTest.parse(buf, 0)
             assertEquals(input.length + 1, output.charactersRead)    // <-- the final " should be read
             assertEquals(expected, output.value)
         }

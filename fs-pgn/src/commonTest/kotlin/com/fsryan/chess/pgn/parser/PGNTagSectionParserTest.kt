@@ -1,10 +1,9 @@
-package com.fsryan.chess.pgn.fsm
+package com.fsryan.chess.pgn.parser
 
 import com.fsryan.chess.pgn.PGNDuplicateTagException
-import com.fsryan.chess.pgn.PGNGameResult
+import com.fsryan.chess.pgn.PGNGameResultValue
 import com.fsryan.chess.pgn.PGNGameTags
 import com.fsryan.chess.pgn.PGNSevenTagRosterTag
-import com.fsryan.chess.pgn.PGNUnexpectedMoveTextDelimiter
 import com.fsryan.chess.pgn.localDate
 import kotlinx.datetime.LocalDate
 import okio.Buffer
@@ -13,15 +12,16 @@ import okio.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PGNTagPairsFSMTest {
+class PGNTagSectionParserTest {
+    
+    val parserUnderTest = PGNTagSectionParser()
 
     @Test
     fun shouldReturnEmptyMapOnEmptyInput() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
             val expected = PGNGameTags(emptyMap())
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(0, actual.charactersRead)
             assertEquals(expected, actual.value)
         }
@@ -33,8 +33,7 @@ class PGNTagPairsFSMTest {
             val input = "[KEY \"Value\"]"
             val expected = PGNGameTags(mapOf("KEY" to "Value"))
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(expected, actual.value)
         }
@@ -48,8 +47,7 @@ class PGNTagPairsFSMTest {
             val input = "$tag1\n$tag2"
             val expected = PGNGameTags(mapOf("KEY" to "Value", "KEY2" to "Value2"))
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(expected, actual.value)
         }
@@ -62,29 +60,11 @@ class PGNTagPairsFSMTest {
             val tag2 = "[KEY \"Value2\"]"
             val input = "$tag1\n$tag2"
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
             try {
-                fsmUnderTest.process(0)
+                parserUnderTest.parse(buf, 0)
             } catch (e: PGNDuplicateTagException) {
                 assertEquals(tag1.length + 2, e.position)   // <-- the newline and opening tag are added
                 assertEquals("KEY", e.key)
-            }
-        }
-    }
-
-    @Test
-    fun shouldThrowParseExceptionWhenWrongMoveTextDelimiterFound() {
-        Buffer().use { buf ->
-            val tag1 = "[KEY \"Value\"]"
-            val tag2 = "[KEY2 \"Value2\"]"
-            val input = "$tag1\n$tag2\n6"
-            buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
-            try {
-                fsmUnderTest.process(0)
-            } catch (e: PGNUnexpectedMoveTextDelimiter) {
-                assertEquals(input.length - 1, e.position)
-                assertEquals('6', e.char)
             }
         }
     }
@@ -102,8 +82,7 @@ class PGNTagPairsFSMTest {
                 [Result "1/2-1/2"]
             """.trimIndent()
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("F/S Return Match", actual.value.event)
             assertEquals("Belgrade, Serbia JUG", actual.value.site)
@@ -115,7 +94,7 @@ class PGNTagPairsFSMTest {
             assertEquals("29", actual.value.round)
             assertEquals("Fischer, Robert J.", actual.value.white)
             assertEquals("Spassky, Boris V.", actual.value.black)
-            assertEquals(PGNGameResult.Draw, actual.value.result)
+            assertEquals(PGNGameResultValue.Draw, actual.value.result)
         }
     }
 
@@ -140,8 +119,7 @@ class PGNTagPairsFSMTest {
                 40. Rd6 Kc5 41. Ra6 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
             """.trimIndent()
             buf.write(input.encodeUtf8())
-            val fsmUnderTest = PGNTagPairsFSM(buf)
-            val actual = fsmUnderTest.process(0)
+            val actual = parserUnderTest.parse(buf, 0)
             assertEquals(167, actual.charactersRead)
             assertEquals("F/S Return Match", actual.value.event)
             assertEquals("Belgrade, Serbia JUG", actual.value.site)
@@ -153,7 +131,7 @@ class PGNTagPairsFSMTest {
             assertEquals("29", actual.value.round)
             assertEquals("Fischer, Robert J.", actual.value.white)
             assertEquals("Spassky, Boris V.", actual.value.black)
-            assertEquals(PGNGameResult.Draw, actual.value.result)
+            assertEquals(PGNGameResultValue.Draw, actual.value.result)
         }
     }
 }

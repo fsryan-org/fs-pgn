@@ -33,7 +33,7 @@ interface PGNGameTags {
      */
     val monthOfYear: Int?
 
-    val result: PGNGameResult
+    val result: PGNGameResultValue
 
     /**
      * In a match competition, this value is the number of the game played. If
@@ -138,8 +138,8 @@ private data class PGNGameTagsData(
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
             .substring(5, 7)
             .toIntOrNull()
-    override val result: PGNGameResult
-        get() = PGNGameResult.fromSerialValue(sevenTagRosterValue(PGNSevenTagRosterTag.Result))
+    override val result: PGNGameResultValue
+        get() = PGNGameResultValue.fromSerialValue(sevenTagRosterValue(PGNSevenTagRosterTag.Result))
     override val round: String
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Round)
     override val site: String
