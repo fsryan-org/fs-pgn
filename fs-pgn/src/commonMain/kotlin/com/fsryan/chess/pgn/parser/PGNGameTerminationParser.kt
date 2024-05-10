@@ -12,10 +12,10 @@ import kotlin.js.JsName
 interface PGNGameTerminationParser: PGNParser<PGNGameResult>
 
 @JsName("createPGNGameTerminationParser")
-fun PGNGameTerminationParser(): PGNGameTerminationParser = PGNGameTerminationParserImpl()
+fun PGNGameTerminationParser(): PGNGameTerminationParser = PGNGameTerminationParserObject
 
-private class PGNGameTerminationParserImpl: PGNGameTerminationParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<PGNGameResult> {
+private object PGNGameTerminationParserObject: PGNGameTerminationParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNGameResult> {
         if (bufferedSource.exhausted()) {
             throw PGNParseException(position, "Unexpected end of file while reading game termination")
         }

@@ -23,7 +23,7 @@ import okio.use
  * quote. Currently, a string is limited to a maximum of 255 characters of
  * data.
  */
-internal fun BufferedSource.readPGNStringToken(position: Int): PGNFSMResult<String> {
+internal fun BufferedSource.readPGNStringToken(position: Int): PGNParserResult<String> {
     var charactersRead = 0
     var readingEscapedCharacter = false
     val buf = StringBuilder()
@@ -83,7 +83,7 @@ internal fun BufferedSource.readPGNStringToken(position: Int): PGNFSMResult<Stri
  * character following the symbol character sequence. Currently, a symbol is
  * limited to a maximum of 255 characters in length.
  */
-internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNFSMResult<String> = peek().use { peekable ->
+internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNParserResult<String> = peek().use { peekable ->
     var charactersRead = 0
     val buf = StringBuilder()
     try {
@@ -120,7 +120,7 @@ internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNFSMResult<Stri
  * integer token is terminated just prior to the first non-symbol character
  * following the integer digit sequence.
  */
-internal fun BufferedSource.readIntegerToken(position: Int): PGNFSMResult<Int> = peek().use { peekableSource ->
+internal fun BufferedSource.readIntegerToken(position: Int): PGNParserResult<Int> = peek().use { peekableSource ->
     var charactersRead = 0
     val buf = StringBuilder()
     try {

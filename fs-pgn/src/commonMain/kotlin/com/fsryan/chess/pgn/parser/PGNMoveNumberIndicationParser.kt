@@ -9,11 +9,11 @@ internal interface PGNMoveNumberIndicationParser: PGNParser<Int>
 
 @JsName("createPGNMoveNumberIndicationParser")
 internal fun PGNMoveNumberIndicationParser(): PGNMoveNumberIndicationParser {
-    return PGNMoveNumberIndicationParserImpl()
+    return PGNMoveNumberIndicationParserObject
 }
 
-private class PGNMoveNumberIndicationParserImpl: PGNMoveNumberIndicationParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<Int> {
+private object PGNMoveNumberIndicationParserObject: PGNMoveNumberIndicationParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<Int> {
         var nextPosition = position + bufferedSource.readWhitespace(position)
         val integerResult = bufferedSource.readIntegerToken(position)
         nextPosition += integerResult.charactersRead

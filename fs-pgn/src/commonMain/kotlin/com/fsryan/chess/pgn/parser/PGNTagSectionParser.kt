@@ -4,6 +4,7 @@ import com.fsryan.chess.pgn.PGNDuplicateTagException
 import com.fsryan.chess.pgn.PGNGameTags
 import com.fsryan.chess.pgn.PGNParseException
 import okio.BufferedSource
+import kotlin.jvm.JvmInline
 
 interface PGNTagSectionParser: PGNParser<PGNGameTags>
 
@@ -11,8 +12,9 @@ fun PGNTagSectionParser(tagPairParser: PGNTagPairParser = PGNTagPairParser()): P
     return PGNTagSectionParserImpl(tagPairParser)
 }
 
-private class PGNTagSectionParserImpl(private val tagPairParser: PGNTagPairParser): PGNTagSectionParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<PGNGameTags> {
+@JvmInline
+private value class PGNTagSectionParserImpl(private val tagPairParser: PGNTagPairParser): PGNTagSectionParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNGameTags> {
         val tagPairs = mutableMapOf<String, String>()
         var currentPosition = position
 

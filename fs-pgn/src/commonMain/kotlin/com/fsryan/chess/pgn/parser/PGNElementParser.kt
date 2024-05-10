@@ -6,6 +6,7 @@ import com.fsryan.chess.pgn.PGNParseException
 import com.fsryan.chess.pgn.PGNSANMove
 import okio.BufferedSource
 import okio.use
+import kotlin.jvm.JvmInline
 
 /**
  * <element> ::= <move-number-indication>
@@ -15,6 +16,10 @@ import okio.use
  * For this, we'll parse all of the above.
  */
 internal interface PGNElementParser: PGNParser<PGNGamePly>
+
+internal fun DefaultPGNElementParser(moveIsBlack: Boolean): PGNElementParser {
+    return DefaultPGNElementParserValue(moveIsBlack)
+}
 
 internal fun PGNElementParser(
     moveNumberIndicationParser: PGNMoveNumberIndicationParser = PGNMoveNumberIndicationParser(),
@@ -28,77 +33,106 @@ internal fun PGNElementParser(
     )
 }
 
+@JvmInline
+private value class DefaultPGNElementParserValue(private val moveIsBlack: Boolean): PGNElementParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNGamePly> {
+        return parseElement(
+            PGNMoveNumberIndicationParser(),
+            PGNSANMoveParser(moveIsBlack),
+            PGNNumericAnnotationGlyphParser(),
+            bufferedSource,
+            position
+        )
+    }
+}
+
 private class PGNElementParserImpl(
     private val moveNumberIndicationParser: PGNMoveNumberIndicationParser,
     private val sanMoveParser: PGNSANMoveParser,
     private val numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser
 ): PGNElementParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<PGNGamePly> {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNGamePly> {
+        return parseElement(
+            moveNumberIndicationParser,
+            sanMoveParser,
+            numericAnnotationGlyphParser,
+            bufferedSource,
+            position
+        )
+    }
+}
+
+private fun parseElement(
+    moveNumberIndicationParser: PGNMoveNumberIndicationParser,
+    sanMoveParser: PGNSANMoveParser,
+    numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser,
+    bufferedSource: BufferedSource,
+    position: Int
+): PGNParserResult<PGNGamePly> {
+    if (bufferedSource.exhausted()) {
+        throw PGNParseException(position, "Unexpected end of file while reading PGN element")
+    }
+
+    var moveNumber: Int? = null
+    var sanMove: PGNSANMove? = null
+    var nag: PGNNumericAnnotationGlyph? = null
+
+    var nextPosition = position
+
+    while (true) {
         if (bufferedSource.exhausted()) {
-            throw PGNParseException(position, "Unexpected end of file while reading PGN element")
+            break
         }
-
-        var moveNumber: Int? = null
-        var sanMove: PGNSANMove? = null
-        var nag: PGNNumericAnnotationGlyph? = null
-
-        var nextPosition = position
-
-        while (true) {
-            if (bufferedSource.exhausted()) {
-                break
-            }
-            nextPosition += bufferedSource.readWhitespace(nextPosition)
-            var mustBreak = false
-            bufferedSource.peek().use { peekable ->
-                val nextChar = peekable.readUTF8Char()
-                when {
-                    nextChar.isDigit() -> when (sanMove) {
-                        null -> {
-                            val moveNumberResult = moveNumberIndicationParser.parse(bufferedSource, nextPosition)
-                            nextPosition += moveNumberResult.charactersRead
-                            moveNumber = moveNumberResult.value
-                        }
-                        else -> mustBreak = true
-                    }
-                    nextChar.canStartMove -> when(sanMove) {
-                        null -> {
-                            val sanMoveResult = sanMoveParser.parse(bufferedSource, nextPosition)
-                            nextPosition += sanMoveResult.charactersRead
-                            sanMove = sanMoveResult.value
-                        }
-                        else -> mustBreak = true
-                    }
-                    nextChar.isNAGStart -> when (nag) {
-                        null -> {
-                            bufferedSource.incrememtByUTF8Char()
-                            val nagResult = numericAnnotationGlyphParser.parse(bufferedSource, nextPosition)
-                            nextPosition += nagResult.charactersRead + 1
-                            nag = nagResult.value
-                        }
-                        else -> mustBreak = true
+        nextPosition += bufferedSource.readWhitespace(nextPosition)
+        var mustBreak = false
+        bufferedSource.peek().use { peekable ->
+            val nextChar = peekable.readUTF8Char()
+            when {
+                nextChar.isDigit() -> when (sanMove) {
+                    null -> {
+                        val moveNumberResult = moveNumberIndicationParser.parse(bufferedSource, nextPosition)
+                        nextPosition += moveNumberResult.charactersRead
+                        moveNumber = moveNumberResult.value
                     }
                     else -> mustBreak = true
                 }
-            }
-
-            if (mustBreak) {
-                break
+                nextChar.canStartMove -> when(sanMove) {
+                    null -> {
+                        val sanMoveResult = sanMoveParser.parse(bufferedSource, nextPosition)
+                        nextPosition += sanMoveResult.charactersRead
+                        sanMove = sanMoveResult.value
+                    }
+                    else -> mustBreak = true
+                }
+                nextChar.isNAGStart -> when (nag) {
+                    null -> {
+                        bufferedSource.incrememtByUTF8Char()
+                        val nagResult = numericAnnotationGlyphParser.parse(bufferedSource, nextPosition)
+                        nextPosition += nagResult.charactersRead + 1
+                        nag = nagResult.value
+                    }
+                    else -> mustBreak = true
+                }
+                else -> mustBreak = true
             }
         }
 
-        return sanMove?.let {
-             PGNFSMResult(
-                value = PGNGamePly(
-                    commentsArray = emptyArray(),
-                    isBlack = sanMoveParser.moveIsBlack,
-                    numberIndicator = moveNumber,
-                    numericAnnotationGlyph = nag,
-                    recursiveAnnotationVariation = null,    // TODO
-                    sanMove = it,
-                ),
-                charactersRead = nextPosition - position
-            )
-        } ?: throw PGNParseException(position, "No SAN move found")
+        if (mustBreak) {
+            break
+        }
     }
+
+    return sanMove?.let {
+        PGNFSMResult(
+            value = PGNGamePly(
+                commentsArray = emptyArray(),
+                isBlack = sanMoveParser.moveIsBlack,
+                numberIndicator = moveNumber,
+                numericAnnotationGlyph = nag,
+                recursiveAnnotationVariation = null,    // TODO
+                sanMove = it,
+            ),
+            charactersRead = nextPosition - position
+        )
+    } ?: throw PGNParseException(position, "No SAN move found")
 }

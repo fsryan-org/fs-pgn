@@ -9,10 +9,10 @@ import kotlin.js.JsName
 interface PGNTagNameParser: PGNParser<String>
 
 @JsName("createPGNTagNameParser")
-fun PGNTagNameParser(): PGNTagNameParser = PGNTagNameParserImpl()
+fun PGNTagNameParser(): PGNTagNameParser = PGNTagNameParserObject
 
-private class PGNTagNameParserImpl: PGNTagNameParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<String> {
+private object PGNTagNameParserObject: PGNTagNameParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<String> {
         return bufferedSource.readPGNSymbolToken(position)
     }
 }

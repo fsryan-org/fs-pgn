@@ -11,49 +11,69 @@ import okio.use
 internal interface PGNMoveTextSectionParser: PGNParser<List<PGNMoveSectionElement>>
 
 internal fun PGNMoveTextSectionParser(
-    elementParser: (moveIsBlack: Boolean) -> PGNElementParser,
+    elementParser: (moveIsBlack: Boolean) -> PGNElementParser = ::DefaultPGNElementParser,
     gameTerminationParser: PGNGameTerminationParser = PGNGameTerminationParser()
 ): PGNMoveTextSectionParser = PGNMoveTextSectionParserImpl(elementParser, gameTerminationParser)
+
+internal object DefaultPGNMoveTextSectionParser: PGNMoveTextSectionParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<List<PGNMoveSectionElement>> {
+        return parseMoveTextSection(
+            elementParser = ::DefaultPGNElementParser,
+            gameTerminationParser = PGNGameTerminationParser(),
+            bufferedSource = bufferedSource,
+            position = position
+        )
+    }
+}
 
 private class PGNMoveTextSectionParserImpl(
     private val elementParser: (moveIsBlack: Boolean) -> PGNElementParser,
     private val gameTerminationParser: PGNGameTerminationParser
 ): PGNMoveTextSectionParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<List<PGNMoveSectionElement>> {
-        var moveIsBlack = false
-        var nextPosition = position
-        val elements = mutableListOf<PGNMoveSectionElement>()
-        while (true) {
-            if (bufferedSource.exhausted()) {
-                break
-            }
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<List<PGNMoveSectionElement>> {
+        return parseMoveTextSection(elementParser, gameTerminationParser, bufferedSource, position)
+    }
+}
 
-            nextPosition += bufferedSource.readWhitespace(nextPosition)
-
-            var readNextMove = true
-            bufferedSource.peek().use { peekable ->
-                try {
-                    val terminator = gameTerminationParser.parse(peekable, nextPosition)
-                    nextPosition += terminator.charactersRead
-                    elements.add(terminator.value)
-                    bufferedSource.incrementByUTF8CharacterCount(terminator.charactersRead)
-                    return PGNFSMResult(value = elements, charactersRead = nextPosition - position)
-                } catch (e: PGNParseException) {
-                    // do nothing
-                    readNextMove = true
-                }
-            }
-
-            if (!readNextMove) {
-                break
-            }
-
-            val result = elementParser(moveIsBlack).parse(bufferedSource, nextPosition)
-            elements.add(result.value)
-            nextPosition += result.charactersRead
-            moveIsBlack = !moveIsBlack
+private fun parseMoveTextSection(
+    elementParser: (moveIsBlack: Boolean) -> PGNElementParser,
+    gameTerminationParser: PGNGameTerminationParser,
+    bufferedSource: BufferedSource,
+    position: Int
+): PGNParserResult<List<PGNMoveSectionElement>> {
+    var moveIsBlack = false
+    var nextPosition = position
+    val elements = mutableListOf<PGNMoveSectionElement>()
+    while (true) {
+        if (bufferedSource.exhausted()) {
+            break
         }
 
-        return PGNFSMResult(value = elements, charactersRead = nextPosition - position)
+        nextPosition += bufferedSource.readWhitespace(nextPosition)
+
+        var readNextMove = true
+        bufferedSource.peek().use { peekable ->
+            try {
+                val terminator = gameTerminationParser.parse(peekable, nextPosition)
+                nextPosition += terminator.charactersRead
+                elements.add(terminator.value)
+                bufferedSource.incrementByUTF8CharacterCount(terminator.charactersRead)
+                return PGNFSMResult(value = elements, charactersRead = nextPosition - position)
+            } catch (e: PGNParseException) {
+                // do nothing
+                readNextMove = true
+            }
+        }
+
+        if (!readNextMove) {
+            break
+        }
+
+        val result = elementParser(moveIsBlack).parse(bufferedSource, nextPosition)
+        elements.add(result.value)
+        nextPosition += result.charactersRead
+        moveIsBlack = !moveIsBlack
     }
+
+    return PGNFSMResult(value = elements, charactersRead = nextPosition - position)
 }

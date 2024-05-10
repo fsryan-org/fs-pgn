@@ -16,7 +16,7 @@ private class PGNRecursiveVariationParserImpl(
     override fun parse(
         bufferedSource: BufferedSource,
         position: Int
-    ): PGNFSMResult<PGNRecursiveVariationAnnotation> {
+    ): PGNParserResult<PGNRecursiveVariationAnnotation> {
         TODO("Not yet implemented")
     }
 }

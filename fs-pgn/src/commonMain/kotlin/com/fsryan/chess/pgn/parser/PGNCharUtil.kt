@@ -62,5 +62,3 @@ internal val Char.isCommentaryEnd: Boolean get () = this == '}'
 
 internal val Char.isRecursiveAnnotationVariationStart: Boolean get() = this == '('
 internal val Char.isRecursiveAnnotationVariationEnd: Boolean get() = this == ')'
-
-internal val Char.isResultUnknown: Boolean get() = this == '*'

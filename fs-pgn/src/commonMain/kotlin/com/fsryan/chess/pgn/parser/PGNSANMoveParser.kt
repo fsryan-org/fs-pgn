@@ -29,7 +29,7 @@ internal fun PGNSANMoveParser(moveIsBlack: Boolean): PGNSANMoveParser {
 
 @JvmInline
 private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PGNSANMoveParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<PGNSANMove> {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNSANMove> {
         if (bufferedSource.exhausted()) {
             throw PGNParseException(position, "Unexpected end of file while reading PGN SAN move")
         }
@@ -66,7 +66,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         startPosition: Int,
         charsRead: Int,
         piece: PGNGamePiece
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             throw PGNParseException(startPosition + charsRead, "Unexpected end of file while reading PGN SAN move")
         }
@@ -108,7 +108,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         piece: PGNGamePiece,
         file: Char?,
         rank: Int?
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             if (file == null || rank == null) {
                 throw PGNParseException(startPosition + charsRead, "Unexpected end of file while reading PGN SAN move")
@@ -284,7 +284,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         sourceRank: Int?,
         destFile: Char?,
         destRank: Int?
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             if (destFile == null || destRank == null) {
                 throw PGNParseException(startPosition + charsRead, "Unexpected end of file while reading PGN SAN move")
@@ -423,7 +423,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         sourceFile: Char?,
         sourceRank: Int?,
         dest: PGNSquare
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             throw PGNParseException(startPosition + charsRead, "Unexpected end of file while reading PGN SAN move")
         }
@@ -466,7 +466,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         sourceFile: Char?,
         sourceRank: Int?,
         dest: PGNSquare
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             return PGNFSMResult(
                 charactersRead = charsRead,
@@ -510,7 +510,6 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 dest = dest,
                 suffixAnnotationSymbol = nextChar
             )
-            // TODO: here, handle annotations
             else -> PGNFSMResult(
                 charactersRead = charsRead + 1,
                 value = PGNSANMove(
@@ -539,7 +538,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         sourceRank: Int?,
         dest: PGNSquare,
         checkStatus: PGNCheckStatus
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             return PGNFSMResult(
                 charactersRead = charsRead,
@@ -600,7 +599,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         sourceRank: Int?,
         dest: PGNSquare,
         suffixAnnotationSymbol: Char
-    ): PGNFSMResult<PGNSANMove> {
+    ): PGNParserResult<PGNSANMove> {
         if (exhausted()) {
             return PGNFSMResult(
                 charactersRead = charsRead,
@@ -650,7 +649,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         }
     }
 
-    private fun BufferedSource.castle(startPosition: Int, charsRead: Int): PGNFSMResult<PGNSANMove> {
+    private fun BufferedSource.castle(startPosition: Int, charsRead: Int): PGNParserResult<PGNSANMove> {
         var additionalCharsRead = 0
         var lastCharRead: Char = 'O'
         while (true) {

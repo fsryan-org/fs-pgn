@@ -9,11 +9,11 @@ internal interface PGNNumericAnnotationGlyphParser: PGNParser<PGNNumericAnnotati
 
 @JsName("createPGNNumericAnnotationGlyphParser")
 internal fun PGNNumericAnnotationGlyphParser(): PGNNumericAnnotationGlyphParser {
-    return PGNNumericAnnotationGlyphParserImpl()
+    return PGNNumericAnnotationGlyphParserObject
 }
 
-private class PGNNumericAnnotationGlyphParserImpl: PGNNumericAnnotationGlyphParser {
-    override fun parse(bufferedSource: BufferedSource, position: Int): PGNFSMResult<PGNNumericAnnotationGlyph> {
+private object PGNNumericAnnotationGlyphParserObject: PGNNumericAnnotationGlyphParser {
+    override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNNumericAnnotationGlyph> {
         if (bufferedSource.exhausted()) {
             throw PGNParseException(position, "Unexpected end of file while reading NAG")
         }
