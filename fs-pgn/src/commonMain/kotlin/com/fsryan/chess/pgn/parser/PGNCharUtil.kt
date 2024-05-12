@@ -57,8 +57,10 @@ internal val Char.isSuffixAnnotationSymbol: Boolean get() = this == '!' || this 
 
 internal val Char.isNAGStart: Boolean get() = this == '$'
 
-internal val Char.isCommentaryStart: Boolean get () = this == '{'
-internal val Char.isCommentaryEnd: Boolean get () = this == '}'
+internal val Char.isEndOfLineCommentaryStart: Boolean get() = this == ';'
+internal val Char.isEndOfLIneCommentaryEnd: Boolean get() = this == '\n'
+internal val Char.isCurlyCommentaryStart: Boolean get() = this == '{'
+internal val Char.isCurlyCommentaryEnd: Boolean get() = this == '}'
 
 internal val Char.isRecursiveAnnotationVariationStart: Boolean get() = this == '('
 internal val Char.isRecursiveAnnotationVariationEnd: Boolean get() = this == ')'

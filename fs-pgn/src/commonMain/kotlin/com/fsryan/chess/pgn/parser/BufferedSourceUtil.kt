@@ -158,7 +158,7 @@ internal fun BufferedSource.readWhitespace(position: Int): Int = peek().use { pe
             }
             var char = peekable.readUTF8Char()
             if (readingAfterNewline && char == '%') {
-                charactersRead += peekable.consumeUTF8CharsAndStopAfter { it == '\n' }.length
+                charactersRead += peekable.consumeUTF8CharsAndStopAfter(includeLastCharOnPredicateMatch = true) { it == '\n' }.length
                 char = '\n'
             }
             if (!char.isWhitespace()) {
@@ -209,6 +209,7 @@ internal fun BufferedSource.incrementByUTF8CharacterCount(count: Int) {
  * @return a String containing the characters read
  */
 internal fun BufferedSource.consumeUTF8CharsAndStopAfter(
+    includeLastCharOnPredicateMatch: Boolean = false,
     onIOException: (IOException) -> Unit = {},
     predicate: (Char) -> Boolean,
 ): String {
@@ -218,6 +219,9 @@ internal fun BufferedSource.consumeUTF8CharsAndStopAfter(
             val char = readUTF8Char()
             buf.append(char)
             if (predicate(char)) {
+                if (!includeLastCharOnPredicateMatch) {
+                    buf.deleteAt(buf.lastIndex)
+                }
                 break
             }
         }

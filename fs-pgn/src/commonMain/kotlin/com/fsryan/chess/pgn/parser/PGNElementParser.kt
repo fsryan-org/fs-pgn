@@ -14,7 +14,7 @@ import kotlin.jvm.JvmInline
  *               <SAN-move>
  *               <numeric-annotation-glyph>
  *
- * For this, we'll parse all of the above.
+ * For this, we'll parse all of the above into the same object.
  */
 internal interface PGNElementParser: PGNParser<PGNGamePly>
 
@@ -84,6 +84,7 @@ private fun parseElement(
     var sanMove: PGNSANMove? = null
     var nag: PGNNumericAnnotationGlyph? = null
     var recursiveAnnotationVariation: PGNRecursiveVariationAnnotation? = null
+    val comments = mutableListOf<String>()
 
     var nextPosition = position
 
@@ -127,6 +128,18 @@ private fun parseElement(
                     recursiveAnnotationVariation = recursiveVariationResult.value
                     nextPosition += recursiveVariationResult.charactersRead + 1
                 }
+                nextChar.isEndOfLineCommentaryStart -> {
+                    bufferedSource.incrememtByUTF8Char()
+                    val comment = bufferedSource.consumeUTF8CharsAndStopAfter { it.isEndOfLIneCommentaryEnd }
+                    comments.add(comment)
+                    nextPosition += comment.length + 2  // <-- initial ; plus newline 
+                }
+                nextChar.isCurlyCommentaryStart -> {
+                    bufferedSource.incrememtByUTF8Char()
+                    val comment = bufferedSource.consumeUTF8CharsAndStopAfter { it.isCurlyCommentaryEnd }
+                    comments.add(comment)
+                    nextPosition += comment.length + 2  // <-- initial { plus }
+                }
                 else -> mustBreak = true
             }
         }
@@ -139,7 +152,7 @@ private fun parseElement(
     return sanMove?.let {
         PGNFSMResult(
             value = PGNGamePly(
-                commentsArray = emptyArray(),
+                comments = comments.toList(),
                 isBlack = sanMoveParser.moveIsBlack,
                 numberIndicator = moveNumber,
                 numericAnnotationGlyph = nag,

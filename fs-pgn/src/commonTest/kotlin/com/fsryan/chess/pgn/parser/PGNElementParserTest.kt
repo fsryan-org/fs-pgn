@@ -146,7 +146,8 @@ class PGNElementParserTest {
         }
     }
 
-    @Test fun shouldParseRecursiveAnnotationVariation() {
+    @Test
+    fun shouldParseRecursiveAnnotationVariation() {
         Buffer().use { buf ->
             val randomNAG = PGNNumericAnnotationGlyph.entries.filter { it != PGNNumericAnnotationGlyph.Unknown }.random()
             val input = "1. e4 \$${randomNAG.id} (1. Nf3)"
@@ -196,7 +197,8 @@ class PGNElementParserTest {
         }
     }
 
-    @Test fun shouldParseNestedVariations() {
+    @Test
+    fun shouldParseNestedVariations() {
         Buffer().use { buf ->
             val randomNAG = PGNNumericAnnotationGlyph.entries.filter { it != PGNNumericAnnotationGlyph.Unknown }.random()
             val input = "1. e4 \$${randomNAG.id} (1. Nf3 (1. Nc3 (1. Nh3)))"
@@ -285,6 +287,242 @@ class PGNElementParserTest {
             val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
             assertEquals(expected, result.value)
             assertEquals(input.length, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseCommentaryWithCurlyBraces() {
+        Buffer().use { buf ->
+            val input = "1. e4 {This is a comment} e5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                commentsArray = arrayOf("This is a comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = null,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseMultipleCommentariesWithCurlyBraces() {
+        Buffer().use { buf ->
+            val input = "1. e4 {This is a comment} {This is another comment} e5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                comments = listOf("This is a comment", "This is another comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = null,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseCommentaryWithCurlyBracesAfterNAG() {
+        Buffer().use { buf ->
+            val randomNAG = PGNNumericAnnotationGlyph.entries.filter { it != PGNNumericAnnotationGlyph.Unknown }.random()
+            val input = "1. e4 \$${randomNAG.id} {This is a comment} e5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                commentsArray = arrayOf("This is a comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = randomNAG,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseMultipleCommentsWithCurlyBracesAfterNAG() {
+        Buffer().use { buf ->
+            val randomNAG = PGNNumericAnnotationGlyph.entries.filter { it != PGNNumericAnnotationGlyph.Unknown }.random()
+            val input = "1. e4 \$${randomNAG.id} {This is a comment} {This is another comment} e5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                comments = listOf("This is a comment", "This is another comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = randomNAG,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseEndOfLineCommentaryAfterMove() {
+        Buffer().use { buf ->
+            val input = "1. e4;This is a comment\ne5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                commentsArray = arrayOf("This is a comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = null,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseMultipleEndOfLineCommentsAfterMove() {
+        Buffer().use { buf ->
+            val input = "1. e4;This is a comment\n;This is another comment\ne5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                commentsArray = arrayOf("This is a comment", "This is another comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = null,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseEndOfLineCommentaryAfterNAG() {
+        Buffer().use { buf ->
+            val randomNAG = PGNNumericAnnotationGlyph.entries.filter { it != PGNNumericAnnotationGlyph.Unknown }.random()
+            val input = "1. e4 \$${randomNAG.id};This is a comment\ne5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                commentsArray = arrayOf("This is a comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = randomNAG,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
+        }
+    }
+
+    @Test
+    fun shouldParseMultipleEndOfLineCommentsAfterNAG() {
+        Buffer().use { buf ->
+            val randomNAG = PGNNumericAnnotationGlyph.entries.filter { it != PGNNumericAnnotationGlyph.Unknown }.random()
+            val input = "1. e4 \$${randomNAG.id};This is a comment\n;This is another comment\ne5"
+            buf.write(input.encodeUtf8())
+            val expected = PGNGamePly(
+                commentsArray = arrayOf("This is a comment", "This is another comment"),
+                isBlack = false,
+                numberIndicator = 1,
+                numericAnnotationGlyph = randomNAG,
+                recursiveAnnotationVariation = null,
+                sanMove = PGNSANMove(
+                    castleType = null,
+                    checkStatus = PGNCheckStatus.None,
+                    destination = PGNSquare(file = 'e', rank = 4),
+                    piece = PGNGamePiece.Pawn,
+                    promotionPiece = null,
+                    isCapture = false,
+                    sourceFileASCII = null,
+                    sourceRank = null,
+                    suffixAnnotation = null
+                )
+            )
+            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            assertEquals(expected, result.value)
+            assertEquals(input.length - 2, result.charactersRead)
         }
     }
 }

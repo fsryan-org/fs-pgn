@@ -254,7 +254,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 else -> when (rank) {
                     null -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
                     else -> PGNFSMResult(
-                        charactersRead = charsRead + 1,
+                        charactersRead = charsRead,
                         value = PGNSANMove(
                             castleType = null,
                             checkStatus = PGNCheckStatus.None,
@@ -395,7 +395,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 else -> when (destRank) {
                     null -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
                     else -> PGNFSMResult(
-                        charactersRead = charsRead + 1,
+                        charactersRead = charsRead,
                         value = PGNSANMove(
                             castleType = null,
                             checkStatus = PGNCheckStatus.None,
@@ -438,7 +438,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 dest = dest
             )
             else -> PGNFSMResult(
-                charactersRead = charsRead + 1,
+                charactersRead = charsRead,
                 value = PGNSANMove(
                     castleType = null,
                     checkStatus = PGNCheckStatus.None,
@@ -508,7 +508,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 suffixAnnotationSymbol = nextChar
             )
             else -> PGNFSMResult(
-                charactersRead = charsRead + 1,
+                charactersRead = charsRead,
                 value = PGNSANMove(
                     castleType = null,
                     checkStatus = PGNCheckStatus.None,
@@ -568,7 +568,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 suffixAnnotationSymbol = nextChar
             )
             else -> PGNFSMResult(
-                charactersRead = charsRead + 1,
+                charactersRead = charsRead,
                 value = PGNSANMove(
                     castleType = castleType,
                     checkStatus = checkStatus,
@@ -630,7 +630,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 )
             )
             else -> PGNFSMResult(
-                charactersRead = charsRead + 1,
+                charactersRead = charsRead,
                 value = PGNSANMove(
                     castleType = castleType,
                     checkStatus = checkStatus,
@@ -671,7 +671,6 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                         else -> when (additionalCharsRead) {
                             2, 4 -> {
                                 lastCharRead = char
-                                additionalCharsRead++
                                 mustBreak = true
                             }
                             else -> throw PGNSANIllegalCharacterException(startPosition + charsRead + additionalCharsRead, lastCharRead)
@@ -688,7 +687,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
         return when {
             lastCharRead.isCheckStatus -> handleCheckStatus(
                 startPosition = startPosition,
-                charsRead = charsRead + additionalCharsRead,
+                charsRead = charsRead + additionalCharsRead + 1,
                 piece = PGNGamePiece.King,
                 promotionPiece = null,
                 castleType = castleType,
@@ -700,7 +699,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
             )
             lastCharRead.isSuffixAnnotationSymbol -> continueWithSuffixAnnotationSymbol(
                 startPosition = startPosition,
-                charsRead = charsRead + additionalCharsRead,
+                charsRead = charsRead + additionalCharsRead + 1,
                 castleType = castleType,
                 checkStatus = PGNCheckStatus.None,
                 piece = PGNGamePiece.King,

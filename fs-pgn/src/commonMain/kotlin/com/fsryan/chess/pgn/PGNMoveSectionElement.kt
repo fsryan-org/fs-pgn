@@ -33,8 +33,24 @@ fun PGNGamePly(
     numericAnnotationGlyph: PGNNumericAnnotationGlyph?,
     recursiveAnnotationVariation: PGNRecursiveVariationAnnotation?,
     sanMove: PGNSANMove
+): PGNGamePly = PGNGamePly(
+    comments = commentsArray.toList(),
+    isBlack = isBlack,
+    numberIndicator = numberIndicator,
+    numericAnnotationGlyph = numericAnnotationGlyph,
+    recursiveAnnotationVariation = recursiveAnnotationVariation,
+    sanMove = sanMove
+)
+
+fun PGNGamePly(
+    comments: List<String>,
+    isBlack: Boolean,
+    numberIndicator: Int?,
+    numericAnnotationGlyph: PGNNumericAnnotationGlyph?,
+    recursiveAnnotationVariation: PGNRecursiveVariationAnnotation?,
+    sanMove: PGNSANMove
 ): PGNGamePly = PGNGamePlyData(
-    _comments = commentsArray.toList(),
+    _comments = comments,
     isBlack = isBlack,
     numberIndicator = numberIndicator,
     numericAnnotationGlyph = numericAnnotationGlyph,
