@@ -35,7 +35,7 @@ class PGNMoveTextSectionParserTest {
             buf.write(input.encodeUtf8())
             val result = parserUnderTest.parse(buf, 0)
             assertEquals(1, result.value.size)
-            assertEquals(1, (result.value[0] as PGNGamePly).numberInditcator)
+            assertEquals(1, (result.value[0] as PGNGamePly).numberIndicator)
             assertEquals(
                 PGNSANMove(
                     castleType = null,
@@ -61,7 +61,7 @@ class PGNMoveTextSectionParserTest {
             buf.write(input.encodeUtf8())
             val result = parserUnderTest.parse(buf, 0)
             assertEquals(4, result.value.size)
-            assertEquals(1, (result.value[0] as PGNGamePly).numberInditcator)
+            assertEquals(1, (result.value[0] as PGNGamePly).numberIndicator)
             assertEquals(
                 PGNSANMove(
                     castleType = null,
@@ -90,7 +90,7 @@ class PGNMoveTextSectionParserTest {
                 ),
                 (result.value[1] as PGNGamePly).sanMove
             )
-            assertEquals(2, (result.value[2] as PGNGamePly).numberInditcator)
+            assertEquals(2, (result.value[2] as PGNGamePly).numberIndicator)
             assertEquals(
                 PGNSANMove(
                     castleType = null,

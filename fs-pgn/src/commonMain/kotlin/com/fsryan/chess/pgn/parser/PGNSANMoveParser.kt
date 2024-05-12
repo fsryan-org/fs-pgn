@@ -249,7 +249,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                     )
                 }
             }
-            nextChar.isWhitespace() -> when (file) {
+            else -> when (file) {
                 null -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
                 else -> when (rank) {
                     null -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
@@ -269,7 +269,6 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                     )
                 }
             }
-            else -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
         }
     }
 
@@ -391,7 +390,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                     )
                 }
             }
-            nextChar.isWhitespace() -> when (destFile) {
+            else -> when (destFile) {
                 null -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
                 else -> when (destRank) {
                     null -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
@@ -411,7 +410,6 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                     )
                 }
             }
-            else -> throw PGNSANIllegalCharacterException(startPosition + charsRead, nextChar)
         }
     }
 
@@ -439,7 +437,7 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                 sourceRank = sourceRank,
                 dest = dest
             )
-            nextChar.isWhitespace() -> PGNFSMResult(
+            else -> PGNFSMResult(
                 charactersRead = charsRead + 1,
                 value = PGNSANMove(
                     castleType = null,
@@ -453,7 +451,6 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                     suffixAnnotation = null
                 )
             )
-            else -> throw PGNSANPieceDoesNotPromoteException(startPosition + charsRead, piece)
         }
     }
 
@@ -688,8 +685,33 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
             additionalCharsRead++
         }
         val castleType = if (additionalCharsRead >= 4) PGNCastle.QueenSide else PGNCastle.KingSide
-        return when (lastCharRead.isWhitespace()) {
-            true -> PGNFSMResult(
+        return when {
+            lastCharRead.isCheckStatus -> handleCheckStatus(
+                startPosition = startPosition,
+                charsRead = charsRead + additionalCharsRead,
+                piece = PGNGamePiece.King,
+                promotionPiece = null,
+                castleType = castleType,
+                isCapture = false,
+                sourceFile = null,
+                sourceRank = null,
+                dest = castleType.kingDestinationSquare(moveIsBlack),
+                checkStatus = PGNCheckStatus.fromChar(lastCharRead),
+            )
+            lastCharRead.isSuffixAnnotationSymbol -> continueWithSuffixAnnotationSymbol(
+                startPosition = startPosition,
+                charsRead = charsRead + additionalCharsRead,
+                castleType = castleType,
+                checkStatus = PGNCheckStatus.None,
+                piece = PGNGamePiece.King,
+                promotionPiece = null,
+                isCapture = false,
+                sourceFile = null,
+                sourceRank = null,
+                dest = castleType.kingDestinationSquare(moveIsBlack),
+                suffixAnnotationSymbol = lastCharRead
+            )
+            else -> PGNFSMResult(
                 charactersRead = charsRead + additionalCharsRead,
                 value = PGNSANMove(
                     castleType = castleType,
@@ -702,18 +724,6 @@ private value class PGNSANMoveParserValue(override val moveIsBlack: Boolean): PG
                     sourceRank = null,
                     suffixAnnotation = null
                 )
-            )
-            else -> handleCheckStatus(
-                startPosition = startPosition,
-                charsRead = charsRead + additionalCharsRead,
-                piece = PGNGamePiece.King,
-                promotionPiece = null,
-                castleType = castleType,
-                isCapture = false,
-                sourceFile = null,
-                sourceRank = null,
-                dest = castleType.kingDestinationSquare(moveIsBlack),
-                checkStatus = PGNCheckStatus.fromChar(lastCharRead),
             )
         }
     }

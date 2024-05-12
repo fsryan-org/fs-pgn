@@ -34,12 +34,12 @@ val PGNGamePiece.charValue: Char
 
 fun PGNGamePiece.Companion.fromChar(char: Char): PGNGamePiece {
     return when (char) {
-        'P' -> PGNGamePiece.Pawn
-        'N' -> PGNGamePiece.Knight
-        'B' -> PGNGamePiece.Bishop
-        'R' -> PGNGamePiece.Rook
-        'Q' -> PGNGamePiece.Queen
-        'K' -> PGNGamePiece.King
+        PGNGamePiece.Pawn.charValue -> PGNGamePiece.Pawn
+        PGNGamePiece.Knight.charValue -> PGNGamePiece.Knight
+        PGNGamePiece.Bishop.charValue -> PGNGamePiece.Bishop
+        PGNGamePiece.Rook.charValue -> PGNGamePiece.Rook
+        PGNGamePiece.Queen.charValue -> PGNGamePiece.Queen
+        PGNGamePiece.King.charValue -> PGNGamePiece.King
         else -> throw IllegalArgumentException("No PGNGamePiece found for char: $char")
     }
 }

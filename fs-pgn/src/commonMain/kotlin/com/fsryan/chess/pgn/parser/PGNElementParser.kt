@@ -3,6 +3,7 @@ package com.fsryan.chess.pgn.parser
 import com.fsryan.chess.pgn.PGNGamePly
 import com.fsryan.chess.pgn.PGNNumericAnnotationGlyph
 import com.fsryan.chess.pgn.PGNParseException
+import com.fsryan.chess.pgn.PGNRecursiveVariationAnnotation
 import com.fsryan.chess.pgn.PGNSANMove
 import okio.BufferedSource
 import okio.use
@@ -24,12 +25,14 @@ internal fun DefaultPGNElementParser(moveIsBlack: Boolean): PGNElementParser {
 internal fun PGNElementParser(
     moveNumberIndicationParser: PGNMoveNumberIndicationParser = PGNMoveNumberIndicationParser(),
     sanMoveParser: PGNSANMoveParser,
-    numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser = PGNNumericAnnotationGlyphParser()
+    numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser = PGNNumericAnnotationGlyphParser(),
+    recursiveVariationParser: (firstMoveIsBlack: Boolean) -> PGNRecursiveVariationParser = ::DefaultPGNRecursiveVariationParser
 ): PGNElementParser {
     return PGNElementParserImpl(
         moveNumberIndicationParser = moveNumberIndicationParser,
         sanMoveParser = sanMoveParser,
-        numericAnnotationGlyphParser = numericAnnotationGlyphParser
+        numericAnnotationGlyphParser = numericAnnotationGlyphParser,
+        recursiveVariationParser = recursiveVariationParser(sanMoveParser.moveIsBlack)
     )
 }
 
@@ -40,6 +43,7 @@ private value class DefaultPGNElementParserValue(private val moveIsBlack: Boolea
             PGNMoveNumberIndicationParser(),
             PGNSANMoveParser(moveIsBlack),
             PGNNumericAnnotationGlyphParser(),
+            PGNRecursiveVariationParser(moveIsBlack, elementParser = ::DefaultPGNElementParser),
             bufferedSource,
             position
         )
@@ -49,13 +53,15 @@ private value class DefaultPGNElementParserValue(private val moveIsBlack: Boolea
 private class PGNElementParserImpl(
     private val moveNumberIndicationParser: PGNMoveNumberIndicationParser,
     private val sanMoveParser: PGNSANMoveParser,
-    private val numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser
+    private val numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser,
+    private val recursiveVariationParser: PGNRecursiveVariationParser
 ): PGNElementParser {
     override fun parse(bufferedSource: BufferedSource, position: Int): PGNParserResult<PGNGamePly> {
         return parseElement(
             moveNumberIndicationParser,
             sanMoveParser,
             numericAnnotationGlyphParser,
+            recursiveVariationParser,
             bufferedSource,
             position
         )
@@ -66,6 +72,7 @@ private fun parseElement(
     moveNumberIndicationParser: PGNMoveNumberIndicationParser,
     sanMoveParser: PGNSANMoveParser,
     numericAnnotationGlyphParser: PGNNumericAnnotationGlyphParser,
+    recursiveVariationParser: PGNRecursiveVariationParser,
     bufferedSource: BufferedSource,
     position: Int
 ): PGNParserResult<PGNGamePly> {
@@ -76,6 +83,7 @@ private fun parseElement(
     var moveNumber: Int? = null
     var sanMove: PGNSANMove? = null
     var nag: PGNNumericAnnotationGlyph? = null
+    var recursiveAnnotationVariation: PGNRecursiveVariationAnnotation? = null
 
     var nextPosition = position
 
@@ -113,6 +121,12 @@ private fun parseElement(
                     }
                     else -> mustBreak = true
                 }
+                nextChar.isRecursiveAnnotationVariationStart -> {
+                    bufferedSource.incrememtByUTF8Char()
+                    val recursiveVariationResult = recursiveVariationParser.parse(bufferedSource, nextPosition)
+                    recursiveAnnotationVariation = recursiveVariationResult.value
+                    nextPosition += recursiveVariationResult.charactersRead + 1
+                }
                 else -> mustBreak = true
             }
         }
@@ -129,7 +143,7 @@ private fun parseElement(
                 isBlack = sanMoveParser.moveIsBlack,
                 numberIndicator = moveNumber,
                 numericAnnotationGlyph = nag,
-                recursiveAnnotationVariation = null,    // TODO
+                recursiveAnnotationVariation = recursiveAnnotationVariation,
                 sanMove = it,
             ),
             charactersRead = nextPosition - position

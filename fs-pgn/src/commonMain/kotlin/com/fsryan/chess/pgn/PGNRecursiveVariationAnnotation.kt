@@ -14,8 +14,14 @@ fun PGNRecursiveVariationAnnotation(plies: List<PGNGamePly>): PGNRecursiveVariat
     return PGNRecursiveVariationAnnotationData(plies)
 }
 
+val PGNRecursiveVariationAnnotation.plies: List<PGNGamePly>
+    get() = when (this) {
+        is PGNRecursiveVariationAnnotationData -> _plies
+        else -> pliesArray.toList()
+    }
+
 private data class PGNRecursiveVariationAnnotationData(
-    private val _plies: List<PGNGamePly>
+    internal val _plies: List<PGNGamePly>
 ): PGNRecursiveVariationAnnotation {
     override val pliesArray: Array<PGNGamePly>
         get() = _plies.toTypedArray()

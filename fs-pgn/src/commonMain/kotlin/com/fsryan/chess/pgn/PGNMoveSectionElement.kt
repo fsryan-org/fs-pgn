@@ -13,13 +13,12 @@ import kotlin.js.JsName
 sealed interface PGNMoveSectionElement: PGNCommentable
 
 /**
- * Represents a half-move (either black or white) in a chess game. A move
- * consists of two plies.
+ * Represents a half-move (either black or white) in a chess game.
  */
 @JsExport
 interface PGNGamePly: PGNMoveSectionElement {
     val isBlack: Boolean
-    val numberInditcator: Int?
+    val numberIndicator: Int?
     val numericAnnotationGlyph: PGNNumericAnnotationGlyph?
     val recursiveAnnotationVariation: PGNRecursiveVariationAnnotation?
     val sanMove: PGNSANMove
@@ -37,7 +36,7 @@ fun PGNGamePly(
 ): PGNGamePly = PGNGamePlyData(
     _comments = commentsArray.toList(),
     isBlack = isBlack,
-    numberInditcator = numberIndicator,
+    numberIndicator = numberIndicator,
     numericAnnotationGlyph = numericAnnotationGlyph,
     recursiveAnnotationVariation = recursiveAnnotationVariation,
     sanMove = sanMove
@@ -99,7 +98,7 @@ private data class PGNGameResultData(
 private data class PGNGamePlyData(
     internal val _comments: List<String>,
     override val isBlack: Boolean,
-    override val numberInditcator: Int?,
+    override val numberIndicator: Int?,
     override val numericAnnotationGlyph: PGNNumericAnnotationGlyph?,
     override val recursiveAnnotationVariation: PGNRecursiveVariationAnnotation?,
     override val sanMove: PGNSANMove
