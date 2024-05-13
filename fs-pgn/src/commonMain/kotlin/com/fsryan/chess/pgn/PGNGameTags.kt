@@ -2,23 +2,99 @@
 
 package com.fsryan.chess.pgn
 
+import com.fsryan.chess.fen.FEN_STANDARD_STARTING_POSITION
+import com.fsryan.chess.fen.ForsythEdwardsNotation
 import kotlinx.datetime.LocalDate
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 
 @JsExport
 interface PGNGameTags {
+
+    /**
+     * This tag uses a name or names in the format of the player name tags;
+     * this identifies the annotator or annotators of the game.
+     */
+    val annotator: String?
+        get() = valueOf("Annotator")
+
     /**
      * The Black tag value is the name of the player or players of the black
      * pieces. The names are given here as they are for the White tag value.
      * @see white
+     * @see blackPlayers
+     * @see blackPlayersArray
      */
     val black: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Black)
+
+    /**
+     * If present, this tag gives the AVERAGE of the ratings of all RATED black
+     * players as an integer. If only unrated players played, this will return
+     * `null`. If there is only one player, and that player is rated, this will
+     * return that player's rating.
+     * @see blackELOs
+     * @see whiteELOAverage
+     */
+    val blackELOAverage: Int?
+        get() = blackELOs.filterNotNull().let {
+            if (it.isEmpty()) null else it.average().toInt()
+        }
+
+    /**
+     * These tags use string values; these are the e-mail or network addresses
+     * of the players. A value of "-" is used for a player without an
+     * electronic address.
+     * @see blackNetworkAddresses
+     * @see whiteNetworkAddress
+     */
+    val blackNetworkAddress: String?
+        get() = valueOf("BlackNA")
+
+    /**
+     * These tags use string values; these describe the player types. The value
+     * "human" should be used for a person while the value "program" should be
+     * used for algorithmic (computer) players.
+     *
+     * This will be null if there are multiple black players.
+     * [blackPlayerTypes] or [blackPlayerTypesArray] may be used to get the
+     * player types of all black players.
+     *
+     * @see blackPlayerTypes
+     * @see whitePlayerType
+     */
+    val blackPlayerType: PGNPlayerType?
+        get() = blackPlayerTypes.let { if (it.size == 1) it[0] else null }
+
+    /**
+     * These use string values such as "FM", "IM", and "GM"; these tags are
+     * used only for the standard abbreviations for FIDE titles. A value of "-"
+     * is used for an untitled player.
+     * @see whiteTitle
+     * @see blackTitles
+     * @see blackTitlesArray
+     */
+    val blackTitle: String?
+        get() = valueOf("BlackTitle")
+
+    /**
+     * These tags use integer values; these are used for USCF (United States
+     * Chess Federation) ratings.
+     * @see blackUSCFs
+     * @see whiteUSCFAverage
+     */
+    val blackUSCFAverage: Int?
+        get() = blackUSCFs.filterNotNull().let {
+            if (it.isEmpty()) null else it.average().toInt()
+        }
 
     /**
      * The 1-indexed day of the month, if known. If unknown, then null
      */
     val dayOfMonth: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
+            .substring(8, 10)
+            .toIntOrNull()
 
     /**
      * The Event tag value should be reasonably descriptive. Abbreviations are
@@ -27,13 +103,42 @@ interface PGNGameTags {
      * event is unknown, a single question mark should appear as the tag value.
      */
     val event: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Event)
+
+    /**
+     * This tag uses a string that gives the Forsyth-Edwards Notation for the
+     * starting position used in the game. FEN is described in a later section
+     * of this document. If a SetUp tag appears with a tag value of "1", the
+     * FEN tag pair is also required.
+     */
+    val fen: String
+        get() = valueOf("FEN") ?: FEN_STANDARD_STARTING_POSITION
 
     /**
      * The 1-indexed month of the year, if known. If unknown, then null
      */
     val monthOfYear: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
+            .substring(5, 7)
+            .toIntOrNull()
+
+    /**
+     * This uses a string that gives the playing mode of the game. Examples:
+     * "OTB" (over the board), "PM" (paper mail), "EM" (electronic mail), "ICS"
+     * (Internet Chess Server), and "TC" (general telecommunication).
+     */
+    val mode: String?
+        get() = valueOf("Mode")
+
+    /**
+     * This tag takes a single integer that gives the number of ply (moves) in
+     * the game.
+     */
+    val plyCount: Int?
+        get() = valueOf("PlyCount")?.toIntOrNull()
 
     val result: PGNGameResultValue
+        get() = PGNGameResultValue.fromSerialValue(sevenTagRosterValue(PGNSevenTagRosterTag.Result))
 
     /**
      * In a match competition, this value is the number of the game played. If
@@ -43,6 +148,20 @@ interface PGNGameTags {
      * the tag value.
      */
     val round: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Round)
+
+    /**
+     * This tag takes an integer that denotes the "set-up" status of the game.
+     * A value of "0" indicates that the game has started from the usual
+     * initial array. A value of "1" indicates that the game started from a
+     * set-up position; this position is given in the "FEN" tag pair. This tag
+     * must appear for a game starting with a set-up position. If it appears
+     * with a tag value of "1", a FEN tag pair must also appear.
+     *
+     * If the tag was not present, then 0 is assumed.
+     */
+    val setUp: Int
+        get() = valueOf("SetUp")?.toIntOrNull() ?: 0
 
     /**
      * Include city and region names along with a standard name for the
@@ -56,11 +175,7 @@ interface PGNGameTags {
      * covered by the IOC.
      */
     val site: String
-
-    /**
-     * The year of the game, if known. If unknown, then null
-     */
-    val year: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Site)
 
     /**
      * The White tag value is the name of the player or players of the white
@@ -82,19 +197,105 @@ interface PGNGameTags {
      *
      * The format used in the FIDE Rating Lists is appropriate for use for
      * player name tags.
+     *
+     * @see black
+     * @see whitePlayers
+     * @see whitePlayersArray
      */
     val white: String
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.White)
+
+    /**
+     * If present, this tag gives the AVERAGE of the ratings of all RATED white
+     * players as an integer. If only unrated players played, this will return
+     * `null`. If there is only one player, and that player is rated, this will
+     * return that player's rating.
+     * @see whiteELOs
+     * @see blackELOAverage
+     */
+    val whiteELOAverage: Int?
+        get() = whiteELOs.filterNotNull().let {
+            if (it.isEmpty()) null else it.average().toInt()
+        }
+
+    /**
+     * These tags use string values; these are the e-mail or network addresses
+     * of the players. A value of "-" is used for a player without an
+     * electronic address.
+     * @see whiteNetworkAddresses
+     * @see blackNetworkAddress
+     */
+    val whiteNetworkAddress: String?
+        get() = valueOf("WhiteNA")
+
+    /**
+     * These tags use string values; these describe the player types. The value
+     * "human" should be used for a person while the value "program" should be
+     * used for algorithmic (computer) players.
+     *
+     * This will be null if there are multiple white players.
+     * [whitePlayerTypes] or [whitePlayerTypesArray] may be used to get the
+     * player types of all white players.
+     *
+     * @see blackPlayerType
+     * @see whitePlayerTypes
+     */
+    val whitePlayerType: PGNPlayerType?
+        get() = whitePlayerTypes.let { if (it.size == 1) it[0] else null }
+
+    /**
+     * These use string values such as "FM", "IM", and "GM"; these tags are
+     * used only for the standard abbreviations for FIDE titles. A value of "-"
+     * is used for an untitled player.
+     * @see blackTitle
+     */
+    val whiteTitle: String?
+        get() = valueOf("WhiteTitle")
+
+    /**
+     * These tags use integer values; these are used for USCF (United States
+     * Chess Federation) ratings.
+     * @see whiteUSCFs
+     * @see blackUSCFAverage
+     */
+    val whiteUSCFAverage: Int?
+        get() = whiteUSCFs.filterNotNull().let {
+            if (it.isEmpty()) null else it.average().toInt()
+        }
+
+    /**
+     * The year of the game, if known. If unknown, then null
+     */
+    val year: Int?
+        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
+            .substring(0, 4)
+            .toIntOrNull()
 
     fun sevenTagRosterValue(tag: PGNSevenTagRosterTag): String
 
     fun valueOf(tagName: String): String?
 }
 
-val PGNGameTags.yearString: String
-    get() = year?.toString() ?: "????"
+val PGNGameTags.annotators: List<String>
+    get() = separateDelimitedPlayerInfo(annotator)
 
-val PGNGameTags.monthOfYearString: String
-    get() = monthOfYear?.toString()?.padStart(2, '0') ?: "??"
+val PGNGameTags.blackELOs: List<Int?>
+    get() = separateDelimitedPlayerInfo(valueOf("BlackElo")).map { it.toIntOrNull() }
+
+val PGNGameTags.blackNetworkAddresses: List<String>
+    get() = separateDelimitedPlayerInfo(blackNetworkAddress)
+
+val PGNGameTags.blackPlayers: List<String>
+    get() = separateDelimitedPlayerInfo(black)
+
+val PGNGameTags.blackPlayerTypes: List<PGNPlayerType>
+    get() = separateDelimitedPlayerInfo(valueOf("BlackType")).map { PGNPlayerType.fromSerialValue(it) }
+
+val PGNGameTags.blackTitles: List<String>
+    get() = separateDelimitedPlayerInfo(blackTitle)
+
+val PGNGameTags.blackUSCFs: List<Int?>
+    get() = separateDelimitedPlayerInfo(valueOf("BlackUSCF")).map { it.toIntOrNull() }
 
 val PGNGameTags.dayOfMonthString: String
     get() = dayOfMonth?.toString()?.padStart(2, '0') ?: "??"
@@ -116,6 +317,78 @@ val PGNGameTags.localDate: LocalDate?
         }
     }
 
+val PGNGameTags.monthOfYearString: String
+    get() = monthOfYear?.toString()?.padStart(2, '0') ?: "??"
+
+val PGNGameTags.whiteELOs: List<Int?>
+    get() = separateDelimitedPlayerInfo(valueOf("WhiteElo")).map { it.toIntOrNull() }
+
+val PGNGameTags.whiteNetworkAddresses: List<String>
+    get() = separateDelimitedPlayerInfo(whiteNetworkAddress)
+
+val PGNGameTags.whitePlayers: List<String>
+    get() = separateDelimitedPlayerInfo(white)
+
+val PGNGameTags.whitePlayerTypes: List<PGNPlayerType>
+    get() = separateDelimitedPlayerInfo(valueOf("WhiteType")).map { PGNPlayerType.fromSerialValue(it) }
+
+val PGNGameTags.whiteTitles: List<String>
+    get() = separateDelimitedPlayerInfo(whiteTitle)
+
+val PGNGameTags.whiteUSCFs: List<Int?>
+    get() = separateDelimitedPlayerInfo(valueOf("WhiteUSCF")).map { it.toIntOrNull() }
+
+val PGNGameTags.yearString: String
+    get() = year?.toString() ?: "????"
+
+@JsExport
+fun PGNGameTags.annotatorsArray(): Array<String> = annotators.toTypedArray()
+
+@JsExport
+fun PGNGameTags.blackELOsArray(): Array<Int?> = blackELOs.toTypedArray()
+
+@JsExport
+fun PGNGameTags.blackNetworkAddressesArray(): Array<String> = blackNetworkAddresses.toTypedArray()
+
+@JsExport
+fun PGNGameTags.blackPlayersArray(): Array<String> = blackPlayers.toTypedArray()
+
+@JsExport
+fun PGNGameTags.blackPlayerTypesArray(): Array<PGNPlayerType> = blackPlayerTypes.toTypedArray()
+
+@JsExport
+fun PGNGameTags.blackTitlesArray(): Array<String> = blackTitles.toTypedArray()
+
+@JsExport
+fun PGNGameTags.blackUSCFsArray(): Array<Int?> = blackUSCFs.toTypedArray()
+
+@JsExport
+fun PGNGameTags.nonStandardStartingPosition(): Boolean = !standardStartingPosition()
+
+@JsExport
+fun PGNGameTags.standardStartingPosition(): Boolean = setUp == 0
+
+@JsExport
+fun PGNGameTags.startingFEN(): ForsythEdwardsNotation = ForsythEdwardsNotation(fen)
+
+@JsExport
+fun PGNGameTags.whiteELOsArray(): Array<Int?> = whiteELOs.toTypedArray()
+
+@JsExport
+fun PGNGameTags.whiteNetworkAddressesArray(): Array<String> = whiteNetworkAddresses.toTypedArray()
+
+@JsExport
+fun PGNGameTags.whitePlayersArray(): Array<String> = whitePlayers.toTypedArray()
+
+@JsExport
+fun PGNGameTags.whitePlayerTypesArray(): Array<PGNPlayerType> = whitePlayerTypes.toTypedArray()
+
+@JsExport
+fun PGNGameTags.whiteTitlesArray(): Array<String> = whiteTitles.toTypedArray()
+
+@JsExport
+fun PGNGameTags.whiteUSCFsArray(): Array<Int?> = whiteUSCFs.toTypedArray()
+
 fun PGNGameTags(tagMap: Map<String, String>): PGNGameTags = PGNGameTagsData(tagMap = tagMap)
 
 @JsExport
@@ -126,30 +399,6 @@ enum class PGNSevenTagRosterTag {
 private data class PGNGameTagsData(
     private val tagMap: Map<String, String>
 ): PGNGameTags {
-    override val black: String
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Black)
-    override val dayOfMonth: Int?
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
-            .substring(8, 10)
-            .toIntOrNull()
-    override val event: String
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Event)
-    override val monthOfYear: Int?
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
-            .substring(5, 7)
-            .toIntOrNull()
-    override val result: PGNGameResultValue
-        get() = PGNGameResultValue.fromSerialValue(sevenTagRosterValue(PGNSevenTagRosterTag.Result))
-    override val round: String
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Round)
-    override val site: String
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Site)
-    override val year: Int?
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
-            .substring(0, 4)
-            .toIntOrNull()
-    override val white: String
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.White)
 
     override fun sevenTagRosterValue(tag: PGNSevenTagRosterTag): String {
         return tagMap[tag.name] ?: "?"
@@ -161,4 +410,8 @@ private data class PGNGameTagsData(
         }
         return tagMap[tagName]
     }
+}
+
+private fun separateDelimitedPlayerInfo(playerNames: String?): List<String> {
+    return playerNames?.split(':')?.map { it.trim() }.orEmpty()
 }

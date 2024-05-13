@@ -19,7 +19,6 @@ private object PGNGameTerminationParserObject: PGNGameTerminationParser {
         if (bufferedSource.exhausted()) {
             throw PGNParseException(position, "Unexpected end of file while reading game termination")
         }
-        // TODO: comments
         try {
             when (val firstChar = bufferedSource.readUTF8Char()) {
                 '0' -> when (val secondChar = bufferedSource.readUTF8Char()) {
