@@ -89,12 +89,29 @@ interface PGNGameTags {
         }
 
     /**
+     * This uses an integer; this identifies the board number in a team event
+     * and also in a simultaneous exhibition.
+     */
+    val boardNumber: Int?
+        get() = valueOf("Board")?.toIntOrNull()
+
+    /**
      * The 1-indexed day of the month, if known. If unknown, then null
      */
     val dayOfMonth: Int?
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
             .substring(8, 10)
             .toIntOrNull()
+
+    /**
+     * This uses a string of either the form "XDD" or the form "XDD/DD" where
+     * the "X" is a letter from "A" to "E" and the "D" positions are digits;
+     * this is used for an opening designation from the five volume
+     * _Encyclopedia of Chess Openings_. This tag pair is associated with the
+     * use of the EPD opcode "eco"
+     */
+    val eco: String?
+        get() = valueOf("ECO")
 
     /**
      * The Event tag value should be reasonably descriptive. Abbreviations are
@@ -104,6 +121,26 @@ interface PGNGameTags {
      */
     val event: String
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Event)
+
+    /**
+     * This uses a string value giving the name of the sponsor of the event.
+     */
+    val eventSponsor: String?
+        get() = valueOf("EventSponsor")
+
+    /**
+     * This uses a string; this is used for the playing section of a tournament
+     * (e.g., "Open" or "Reserve").
+     */
+    val eventSection: String?
+        get() = valueOf("Section")
+
+    /**
+     * This uses a string; this is used for the stage of a multistage event
+     * (e.g., "Preliminary" or "Semifinal").
+     */
+    val eventStage: String?
+        get() = valueOf("Stage")
 
     /**
      * This tag uses a string that gives the Forsyth-Edwards Notation for the
@@ -129,6 +166,22 @@ interface PGNGameTags {
      */
     val mode: String?
         get() = valueOf("Mode")
+
+    /**
+     * This uses a string; this is used for an opening designation from the
+     * _New in Chess_ database. This tag pair is associated with the use of the
+     * EPD opcode "nic".
+     */
+    val nic: String?
+        get() = valueOf("NIC")
+
+    /**
+     * This uses a string; this is used for the traditional opening name. This
+     * will vary by locale. This tag pair is associated with the use of the EPD
+     * opcode "v0"
+     */
+    val opening: String?
+        get() = valueOf("Opening")
 
     /**
      * This tag takes a single integer that gives the number of ply (moves) in
@@ -176,6 +229,41 @@ interface PGNGameTags {
      */
     val site: String
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Site)
+
+    /**
+     * This uses a string; this is used to further refine the Variation tag.
+     * This will vary by locale. This tag pair is associated with the use of
+     * the EPD opcode "v2"
+     */
+    val subVariation: String?
+        get() = valueOf("SubVariation")
+
+    /**
+     * This uses a list of one or more time control fields. Each field contains
+     * a descriptor for each time control period; if more than one descriptor
+     * is present then they are separated by the colon character (":"). The
+     * descriptors appear in the order in which they are used in the game. The
+     * last field appearing is considered to be implicitly repeated for further
+     * control periods as needed.
+     */
+    val timeControlString: String?
+        get() = valueOf("TimeControl")
+
+    /**
+     * This takes a string that describes the reason for the conclusion of the
+     * game. While the Result tag gives the result of the game, it does not
+     * provide any extra information and so the Termination tag is defined for this purpose.
+     */
+    val termination: PGNGameTermination?
+        get() = valueOf("Termination")?.let(PGNGameTermination.Companion::fromSerialValue)
+
+    /**
+     * This uses a string; this is used to further refine the Opening tag. This
+     * will vary by locale. This tag pair is associated with the use of the EPD
+     * opcode "v1"
+     */
+    val variation: String?
+        get() = valueOf("Variation")
 
     /**
      * The White tag value is the name of the player or players of the white

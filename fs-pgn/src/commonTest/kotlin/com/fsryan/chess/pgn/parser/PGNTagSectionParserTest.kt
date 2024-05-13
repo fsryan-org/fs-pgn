@@ -5,6 +5,7 @@ import com.fsryan.chess.fen.ForsythEdwardsNotation
 import com.fsryan.chess.pgn.PGNDuplicateTagException
 import com.fsryan.chess.pgn.PGNGameResultValue
 import com.fsryan.chess.pgn.PGNGameTags
+import com.fsryan.chess.pgn.PGNGameTermination
 import com.fsryan.chess.pgn.PGNPlayerType
 import com.fsryan.chess.pgn.PGNSevenTagRosterTag
 import com.fsryan.chess.pgn.annotators
@@ -509,6 +510,118 @@ class PGNTagSectionParserTest {
             assertEquals(input.length, actual.charactersRead)
             assertEquals("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 2", actual.value.fen)
             assertEquals(ForsythEdwardsNotation("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 2"), actual.value.startingFEN())
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseEventSponsor() {
+        val input = "[EventSponsor \"ACME\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("ACME", actual.value.eventSponsor)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseEventSection() {
+        val input = "[Section \"Open\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("Open", actual.value.eventSection)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseEventStage() {
+        val input = "[Stage \"Preliminary\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("Preliminary", actual.value.eventStage)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseBoardNumber() {
+        val input = "[Board \"1\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals(1, actual.value.boardNumber)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseOpening() {
+        val input = "[Opening \"Sicilian Defense\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("Sicilian Defense", actual.value.opening)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseVariation() {
+        val input = "[Variation \"Sicilian Defense: Najdorf Variation\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("Sicilian Defense: Najdorf Variation", actual.value.variation)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseSubVariation() {
+        val input = "[SubVariation \"Sicilian Defense: Najdorf Variation: English Attack\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("Sicilian Defense: Najdorf Variation: English Attack", actual.value.subVariation)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseECO() {
+        val input = "[ECO \"B90\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("B90", actual.value.eco)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseNIC() {
+        val input = "[NIC \"Sicilian Defense: Najdorf Variation: English Attack\"]"
+        Buffer().use { buf ->
+            buf.write(input.encodeUtf8())
+            val actual = parserUnderTest.parse(buf, 0)
+            assertEquals(input.length, actual.charactersRead)
+            assertEquals("Sicilian Defense: Najdorf Variation: English Attack", actual.value.nic)
+        }
+    }
+
+    @Test
+    fun shouldCorrectlyParseAllGameTerminations() {
+        PGNGameTermination.entries.forEach { termination ->
+            val input = "[Termination \"${termination.serialValue}\"]"
+            Buffer().use { buf ->
+                buf.write(input.encodeUtf8())
+                val actual = parserUnderTest.parse(buf, 0)
+                assertEquals(input.length, actual.charactersRead)
+                assertEquals(termination, actual.value.termination)
+            }
         }
     }
 }
