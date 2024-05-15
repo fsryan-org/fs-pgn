@@ -15,7 +15,9 @@ import com.fsryan.chess.pgn.blackPlayerTypes
 import com.fsryan.chess.pgn.blackPlayers
 import com.fsryan.chess.pgn.blackTitles
 import com.fsryan.chess.pgn.blackUSCFs
+import com.fsryan.chess.pgn.dayOfMonth
 import com.fsryan.chess.pgn.localDate
+import com.fsryan.chess.pgn.monthOfYear
 import com.fsryan.chess.pgn.nonStandardStartingPosition
 import com.fsryan.chess.pgn.standardStartingPosition
 import com.fsryan.chess.pgn.startingFEN
@@ -25,6 +27,7 @@ import com.fsryan.chess.pgn.whitePlayerTypes
 import com.fsryan.chess.pgn.whitePlayers
 import com.fsryan.chess.pgn.whiteTitles
 import com.fsryan.chess.pgn.whiteUSCFs
+import com.fsryan.chess.pgn.year
 import kotlinx.datetime.LocalDate
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8

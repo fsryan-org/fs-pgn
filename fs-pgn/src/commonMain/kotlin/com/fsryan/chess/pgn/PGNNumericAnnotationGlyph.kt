@@ -153,5 +153,5 @@ enum class PGNNumericAnnotationGlyph(val id: Int, val interpretation: String) {
     }
 }
 
-val PGNNumericAnnotationGlyph.serialValue: String
+val PGNNumericAnnotationGlyph.pgnString: String
     get() = if (this == PGNNumericAnnotationGlyph.Unknown) "" else "\$${id}"

@@ -32,6 +32,27 @@ val PGNSANMove.sourceSquare: PGNSquare?
         }
     }
 
+val PGNSANMove.pgnString: String
+    get() = buildString {
+        castleType?.let {
+            append(it.serialValue)
+        }
+        if (isEmpty()) {
+            if (piece != PGNGamePiece.Pawn) {
+                append(piece.serialValue)
+            }
+            sourceFile?.let { append(it) }
+            sourceRank?.let { append(it) }
+            if (isCapture) {
+                append('x')
+            }
+            append(destination.pgnString)
+            promotionPiece?.let { append("=${it.serialValue}") }
+        }
+        append(checkStatus.serialValue)
+        // We don't serialize the suffix annotation
+    }
+
 @JsExport
 @JsName("createPGNSANMove")
 fun PGNSANMove(

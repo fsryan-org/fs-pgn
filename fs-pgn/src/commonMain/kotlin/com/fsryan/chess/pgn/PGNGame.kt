@@ -16,7 +16,7 @@ interface PGNGame {
 @JsName("createPGNGame")
 fun PGNGame(tags: PGNGameTags, elements: List<PGNMoveSectionElement>): PGNGame = PGNGameData(tags, elements)
 
-private class PGNGameData(
+private data class PGNGameData(
     override val tags: PGNGameTags,
     override val elements: List<PGNMoveSectionElement>
 ): PGNGame

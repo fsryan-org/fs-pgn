@@ -43,6 +43,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":fs-pgn"))
+            api(libs.benasher.uuid)
         }
     }
 }

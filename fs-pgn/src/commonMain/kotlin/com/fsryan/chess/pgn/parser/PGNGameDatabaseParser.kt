@@ -8,7 +8,9 @@ import kotlin.jvm.JvmInline
 
 interface PGNGameDatabaseParser: PGNParser<PGNGameDatabase>
 
-fun PGNGameDatabaseParser(gameParser: PGNGameParser): PGNGameDatabaseParser = PGNGameDatabaseParserImpl(gameParser)
+fun PGNGameDatabaseParser(
+    gameParser: PGNGameParser = PGNGameParser()
+): PGNGameDatabaseParser = PGNGameDatabaseParserImpl(gameParser)
 
 @JvmInline
 private value class PGNGameDatabaseParserImpl(private val gameParser: PGNGameParser): PGNGameDatabaseParser {

@@ -62,7 +62,7 @@ class PGNSANMoveParserTest {
             sequenceOf(2, 3, 4, 5, 6, 7).forEach { rank -> // <-- non-promotion ranks
                 PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                     Buffer().use { buf ->
-                        buf.write("$file$rank${suffixAnnotation.annotationText} ".encodeUtf8())
+                        buf.write("$file$rank${suffixAnnotation.serialValue} ".encodeUtf8())
                         val expected = PGNSANMove(
                             castleType = null,
                             checkStatus = PGNCheckStatus.None,
@@ -115,7 +115,7 @@ class PGNSANMoveParserTest {
                 sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkChar, expectedStatus) ->
                     PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                         Buffer().use { buf ->
-                            buf.write("$file$rank$checkChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                            buf.write("$file$rank$checkChar${suffixAnnotation.serialValue} ".encodeUtf8())
                             val expected = PGNSANMove(
                                 castleType = null,
                                 checkStatus = expectedStatus,
@@ -169,7 +169,7 @@ class PGNSANMoveParserTest {
                 sequenceOf('Q', 'R', 'B', 'N').forEach { promotionPieceChar ->
                     PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                         Buffer().use { buf ->
-                            buf.write("$file$rank=$promotionPieceChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                            buf.write("$file$rank=$promotionPieceChar${suffixAnnotation.serialValue} ".encodeUtf8())
                             val expected = PGNSANMove(
                                 castleType = null,
                                 checkStatus = PGNCheckStatus.None,
@@ -226,7 +226,7 @@ class PGNSANMoveParserTest {
                     sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkChar, expectedStatus) ->
                         PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                             Buffer().use { buf ->
-                                buf.write("$file$rank=$promotionPieceChar$checkChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                                buf.write("$file$rank=$promotionPieceChar$checkChar${suffixAnnotation.serialValue} ".encodeUtf8())
                                 val expected = PGNSANMove(
                                     castleType = null,
                                     checkStatus = expectedStatus,
@@ -299,7 +299,7 @@ class PGNSANMoveParserTest {
                 sequenceOf(2, 3, 4, 5, 6, 7).forEach { destinationRank ->
                     PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                         Buffer().use { buf ->
-                            buf.write("${sourceFile}x$destinationFile$destinationRank${suffixAnnotation.annotationText} ".encodeUtf8())
+                            buf.write("${sourceFile}x$destinationFile$destinationRank${suffixAnnotation.serialValue} ".encodeUtf8())
                             val expected = PGNSANMove(
                                 castleType = null,
                                 checkStatus = PGNCheckStatus.None,
@@ -374,7 +374,7 @@ class PGNSANMoveParserTest {
                     sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkChar, expectedStatus) ->
                         PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                             Buffer().use { buf ->
-                                buf.write("${sourceFile}x$destinationFile$destinationRank$checkChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                                buf.write("${sourceFile}x$destinationFile$destinationRank$checkChar${suffixAnnotation.serialValue} ".encodeUtf8())
                                 val expected = PGNSANMove(
                                     castleType = null,
                                     checkStatus = expectedStatus,
@@ -453,7 +453,7 @@ class PGNSANMoveParserTest {
                         sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkChar, expectedStatus) ->
                             PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                                 Buffer().use { buf ->
-                                    buf.write("${sourceFile}x$destinationFile$destinationRank=$promotionPieceChar$checkChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                                    buf.write("${sourceFile}x$destinationFile$destinationRank=$promotionPieceChar$checkChar${suffixAnnotation.serialValue} ".encodeUtf8())
                                     val expected = PGNSANMove(
                                         castleType = null,
                                         checkStatus = expectedStatus,
@@ -513,7 +513,7 @@ class PGNSANMoveParserTest {
                 }.forEach { rank ->
                     PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                         Buffer().use { buf ->
-                            buf.write("$pieceChar$file$rank${suffixAnnotation.annotationText} ".encodeUtf8())
+                            buf.write("$pieceChar$file$rank${suffixAnnotation.serialValue} ".encodeUtf8())
                             val expected = PGNSANMove(
                                 castleType = null,
                                 checkStatus = PGNCheckStatus.None,
@@ -574,7 +574,7 @@ class PGNSANMoveParserTest {
                     }.forEach { rank ->
                         PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                             Buffer().use { buf ->
-                                buf.write("$pieceChar$sourceFile$destinationFile$rank${suffixAnnotation.annotationText} ".encodeUtf8())
+                                buf.write("$pieceChar$sourceFile$destinationFile$rank${suffixAnnotation.serialValue} ".encodeUtf8())
                                 val expected = PGNSANMove(
                                     castleType = null,
                                     checkStatus = PGNCheckStatus.None,
@@ -639,7 +639,7 @@ class PGNSANMoveParserTest {
                         sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkStatusChar, expectedCheckStatus) ->
                             PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                                 Buffer().use { buf ->
-                                    buf.write("$pieceChar$sourceFile$destinationFile$rank$checkStatusChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                                    buf.write("$pieceChar$sourceFile$destinationFile$rank$checkStatusChar${suffixAnnotation.serialValue} ".encodeUtf8())
                                     val expected = PGNSANMove(
                                         castleType = null,
                                         checkStatus = expectedCheckStatus,
@@ -702,7 +702,7 @@ class PGNSANMoveParserTest {
                     }.forEach { rank ->
                         PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                             Buffer().use { buf ->
-                                buf.write("$pieceChar${sourceFile}x$destinationFile$rank${suffixAnnotation.annotationText} ".encodeUtf8())
+                                buf.write("$pieceChar${sourceFile}x$destinationFile$rank${suffixAnnotation.serialValue} ".encodeUtf8())
                                 val expected = PGNSANMove(
                                     castleType = null,
                                     checkStatus = PGNCheckStatus.None,
@@ -767,7 +767,7 @@ class PGNSANMoveParserTest {
                         sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkStatusChar, expectedCheckStatus) ->
                             PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                                 Buffer().use { buf ->
-                                    buf.write("$pieceChar${sourceFile}x$destinationFile$rank$checkStatusChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                                    buf.write("$pieceChar${sourceFile}x$destinationFile$rank$checkStatusChar${suffixAnnotation.serialValue} ".encodeUtf8())
                                     val expected = PGNSANMove(
                                         castleType = null,
                                         checkStatus = expectedCheckStatus,
@@ -834,7 +834,7 @@ class PGNSANMoveParserTest {
                     }.forEach { destinationRank ->
                         PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                             Buffer().use { buf ->
-                                buf.write("$pieceChar$sourceRank$destinationFile$destinationRank${suffixAnnotation.annotationText} ".encodeUtf8())
+                                buf.write("$pieceChar$sourceRank$destinationFile$destinationRank${suffixAnnotation.serialValue} ".encodeUtf8())
                                 val expected = PGNSANMove(
                                     castleType = null,
                                     checkStatus = PGNCheckStatus.None,
@@ -900,7 +900,7 @@ class PGNSANMoveParserTest {
                     }.forEach { destinationRank ->
                         PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                             Buffer().use { buf ->
-                                buf.write("$pieceChar${sourceRank}x$destinationFile$destinationRank${suffixAnnotation.annotationText} ".encodeUtf8())
+                                buf.write("$pieceChar${sourceRank}x$destinationFile$destinationRank${suffixAnnotation.serialValue} ".encodeUtf8())
                                 val expected = PGNSANMove(
                                     castleType = null,
                                     checkStatus = PGNCheckStatus.None,
@@ -969,7 +969,7 @@ class PGNSANMoveParserTest {
                         sequenceOf('+' to PGNCheckStatus.Check, '#' to PGNCheckStatus.Checkmate).forEach { (checkStatusChar, expectedCheckStatus) ->
                             PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                                 Buffer().use { buf ->
-                                    buf.write("$pieceChar${sourceRank}x$destinationFile$destinationRank$checkStatusChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                                    buf.write("$pieceChar${sourceRank}x$destinationFile$destinationRank$checkStatusChar${suffixAnnotation.serialValue} ".encodeUtf8())
                                     val expected = PGNSANMove(
                                         castleType = null,
                                         checkStatus = expectedCheckStatus,
@@ -1039,7 +1039,7 @@ class PGNSANMoveParserTest {
                         }.forEach { destinationRank ->
                             PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                                 Buffer().use { buf ->
-                                    buf.write("$pieceChar$sourceFile$sourceRank$destinationFile$destinationRank${suffixAnnotation.annotationText} ".encodeUtf8())
+                                    buf.write("$pieceChar$sourceFile$sourceRank$destinationFile$destinationRank${suffixAnnotation.serialValue} ".encodeUtf8())
                                     val expected = PGNSANMove(
                                         castleType = null,
                                         checkStatus = PGNCheckStatus.None,
@@ -1109,7 +1109,7 @@ class PGNSANMoveParserTest {
                         }.forEach { destinationRank ->
                             PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                                 Buffer().use { buf ->
-                                    buf.write("$pieceChar$sourceFile${sourceRank}x$destinationFile$destinationRank${suffixAnnotation.annotationText} ".encodeUtf8())
+                                    buf.write("$pieceChar$sourceFile${sourceRank}x$destinationFile$destinationRank${suffixAnnotation.serialValue} ".encodeUtf8())
                                     val expected = PGNSANMove(
                                         castleType = null,
                                         checkStatus = PGNCheckStatus.None,
@@ -1165,7 +1165,7 @@ class PGNSANMoveParserTest {
                 sequenceOf(1, 2, 3, 4, 5, 6, 7, 8).forEach { destinationRank ->
                     PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                         Buffer().use { buf ->
-                            buf.write("${pieceChar}x$destinationFile$destinationRank${suffixAnnotation.annotationText} ".encodeUtf8())
+                            buf.write("${pieceChar}x$destinationFile$destinationRank${suffixAnnotation.serialValue} ".encodeUtf8())
                             val expected = PGNSANMove(
                                 castleType = null,
                                 checkStatus = PGNCheckStatus.None,
@@ -1299,7 +1299,7 @@ class PGNSANMoveParserTest {
                 sequenceOf(true, false).forEach { isBlack ->
                     PGNSANMoveSuffixAnnotation.entries.forEach { suffixAnnotation ->
                         Buffer().use { buf ->
-                            buf.write("${serializedCastle}$checkChar${suffixAnnotation.annotationText} ".encodeUtf8())
+                            buf.write("${serializedCastle}$checkChar${suffixAnnotation.serialValue} ".encodeUtf8())
                             val expected = PGNSANMove(
                                 castleType = castleType,
                                 checkStatus = expectedStatus,

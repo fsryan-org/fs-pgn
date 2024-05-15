@@ -6,7 +6,7 @@ import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 
 @JsExport
-enum class PGNSANMoveSuffixAnnotation(val nagId: Int, val annotationText: String) {
+enum class PGNSANMoveSuffixAnnotation(val nagId: Int, val serialValue: String) {
     GoodMove(1, "!"),
     PoorMove(2, "?"),
     VeryGoodMove(3, "!!"),
@@ -23,12 +23,12 @@ enum class PGNSANMoveSuffixAnnotation(val nagId: Int, val annotationText: String
 
 fun PGNSANMoveSuffixAnnotation.Companion.fromAnnotationText(annotationText: String): PGNSANMoveSuffixAnnotation {
     return when (annotationText) {
-        PGNSANMoveSuffixAnnotation.GoodMove.annotationText -> PGNSANMoveSuffixAnnotation.GoodMove
-        PGNSANMoveSuffixAnnotation.PoorMove.annotationText -> PGNSANMoveSuffixAnnotation.PoorMove
-        PGNSANMoveSuffixAnnotation.VeryGoodMove.annotationText -> PGNSANMoveSuffixAnnotation.VeryGoodMove
-        PGNSANMoveSuffixAnnotation.VeryPoorMove.annotationText -> PGNSANMoveSuffixAnnotation.VeryPoorMove
-        PGNSANMoveSuffixAnnotation.SpeculativeMove.annotationText -> PGNSANMoveSuffixAnnotation.SpeculativeMove
-        PGNSANMoveSuffixAnnotation.QuestionableMove.annotationText -> PGNSANMoveSuffixAnnotation.QuestionableMove
+        PGNSANMoveSuffixAnnotation.GoodMove.serialValue -> PGNSANMoveSuffixAnnotation.GoodMove
+        PGNSANMoveSuffixAnnotation.PoorMove.serialValue -> PGNSANMoveSuffixAnnotation.PoorMove
+        PGNSANMoveSuffixAnnotation.VeryGoodMove.serialValue -> PGNSANMoveSuffixAnnotation.VeryGoodMove
+        PGNSANMoveSuffixAnnotation.VeryPoorMove.serialValue -> PGNSANMoveSuffixAnnotation.VeryPoorMove
+        PGNSANMoveSuffixAnnotation.SpeculativeMove.serialValue -> PGNSANMoveSuffixAnnotation.SpeculativeMove
+        PGNSANMoveSuffixAnnotation.QuestionableMove.serialValue -> PGNSANMoveSuffixAnnotation.QuestionableMove
         else -> throw IllegalArgumentException("No PGNPlySuffixAnnotation found for annotationText: $annotationText")
     }
 }

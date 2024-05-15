@@ -8,6 +8,7 @@ import com.fsryan.chess.pgn.PGNCastle
 import com.fsryan.chess.pgn.PGNGamePiece
 import com.fsryan.chess.pgn.PGNSquare
 import com.fsryan.chess.pgn.PlayerGamePiece
+import com.fsryan.chess.pgn.test.TestForsythEdwardsNotation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -330,5 +331,11 @@ class ForsythEdwardsParseTest {
 
         assertFalse(fen.whiteHasCastlingRights(PGNCastle.KingSide))
         assertFalse(fen.whiteHasCastlingRights(PGNCastle.QueenSide))
+    }
+
+    @Test
+    fun something() {
+        val fen = TestForsythEdwardsNotation()
+        println(fen)
     }
 }

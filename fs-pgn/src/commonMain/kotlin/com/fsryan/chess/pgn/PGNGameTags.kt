@@ -96,12 +96,19 @@ interface PGNGameTags {
         get() = valueOf("Board")?.toIntOrNull()
 
     /**
-     * The 1-indexed day of the month, if known. If unknown, then null
+     * The Date tag value gives the starting date for the game. (Note: this is
+     * not necessarily the same as the starting date for the event.) The date
+     * is given with respect to the local time of the site given in the Event
+     * tag. The Date tag value field always uses a standard ten character
+     * format: "YYYY.MM.DD". The first four characters are digits that give the
+     * year, the next character is a period, the next two characters are digits
+     * that give the month, the next character is a period, and the final two
+     * characters are digits that give the day of the month. If any of the
+     * digit fields are not known, then question marks are used in place of the
+     * digits.
      */
-    val dayOfMonth: Int?
+    val date: String
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
-            .substring(8, 10)
-            .toIntOrNull()
 
     /**
      * This uses a string of either the form "XDD" or the form "XDD/DD" where
@@ -152,12 +159,13 @@ interface PGNGameTags {
         get() = valueOf("FEN") ?: FEN_STANDARD_STARTING_POSITION
 
     /**
-     * The 1-indexed month of the year, if known. If unknown, then null
+     * An array of all the keys in the tag map. At a minimum, all tags in the
+     * [PGNSevenTagRosterTag] enumeration will be returned in their expected
+     * order. After the [PGNSevenTagRosterTag] tags, all tags should be
+     * returned alphabetically. This is useful for iterating over all tags in a
+     * consistent order.
      */
-    val monthOfYear: Int?
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
-            .substring(5, 7)
-            .toIntOrNull()
+    val keysArray: Array<String>
 
     /**
      * This uses a string that gives the playing mode of the game. Examples:
@@ -351,14 +359,6 @@ interface PGNGameTags {
             if (it.isEmpty()) null else it.average().toInt()
         }
 
-    /**
-     * The year of the game, if known. If unknown, then null
-     */
-    val year: Int?
-        get() = sevenTagRosterValue(PGNSevenTagRosterTag.Date)
-            .substring(0, 4)
-            .toIntOrNull()
-
     fun sevenTagRosterValue(tag: PGNSevenTagRosterTag): String
 
     fun valueOf(tagName: String): String?
@@ -385,8 +385,27 @@ val PGNGameTags.blackTitles: List<String>
 val PGNGameTags.blackUSCFs: List<Int?>
     get() = separateDelimitedPlayerInfo(valueOf("BlackUSCF")).map { it.toIntOrNull() }
 
+/**
+ * The 1-indexed day of the month, if known. If unknown, then null
+ */
+val PGNGameTags.dayOfMonth: Int?
+    get() = dayOfMonthString.toIntOrNull()
 val PGNGameTags.dayOfMonthString: String
-    get() = dayOfMonth?.toString()?.padStart(2, '0') ?: "??"
+    get() = date.substring(8, 10)
+
+val PGNGameTags.keys: List<String>
+    get() = when (this) {
+        is PGNGameTagsData -> PGNSevenTagRosterTag.entries.map { it.name }.plus(tagMap.keys.toList()).toSet()
+        else -> PGNSevenTagRosterTag.entries.map { it.name }.plus(keysArray.toList()).toSet()
+    }.sortedWith { t1, t2 ->
+        val str1 = PGNSevenTagRosterTag.entries.firstOrNull { it.name == t1 }
+        val str2 = PGNSevenTagRosterTag.entries.firstOrNull { it.name == t2 }
+        str1?.let {
+            str2?.let {
+                str1.ordinal - str2.ordinal
+            } ?: -1
+        } ?: str2?.let { 1 } ?: t1.compareTo(t2)
+    }
 
 /**
  * If the year, month, and day of the month are known, then this property will
@@ -405,8 +424,13 @@ val PGNGameTags.localDate: LocalDate?
         }
     }
 
+/**
+ * The 1-indexed month of the year, if known. If unknown, then null
+ */
+val PGNGameTags.monthOfYear: Int?
+    get() = monthOfYearString.toIntOrNull()
 val PGNGameTags.monthOfYearString: String
-    get() = monthOfYear?.toString()?.padStart(2, '0') ?: "??"
+    get() = date.substring(5, 7)
 
 val PGNGameTags.whiteELOs: List<Int?>
     get() = separateDelimitedPlayerInfo(valueOf("WhiteElo")).map { it.toIntOrNull() }
@@ -426,8 +450,14 @@ val PGNGameTags.whiteTitles: List<String>
 val PGNGameTags.whiteUSCFs: List<Int?>
     get() = separateDelimitedPlayerInfo(valueOf("WhiteUSCF")).map { it.toIntOrNull() }
 
+
+/**
+ * The year of the game, if known. If unknown, then null
+ */
+val PGNGameTags.year: Int?
+    get() = yearString.toIntOrNull()
 val PGNGameTags.yearString: String
-    get() = year?.toString() ?: "????"
+    get() = date.substring(0, 4)
 
 @JsExport
 fun PGNGameTags.annotatorsArray(): Array<String> = annotators.toTypedArray()
@@ -481,15 +511,19 @@ fun PGNGameTags(tagMap: Map<String, String>): PGNGameTags = PGNGameTagsData(tagM
 
 @JsExport
 enum class PGNSevenTagRosterTag {
-    Black, Date, Event, Result, Round, Site, White
+    Event, Site, Date, Round, White, Black, Result
 }
 
-private data class PGNGameTagsData(
-    private val tagMap: Map<String, String>
-): PGNGameTags {
+private data class PGNGameTagsData(internal val tagMap: Map<String, String>): PGNGameTags {
+    override val keysArray: Array<String>
+        get() = keys.toTypedArray()
 
     override fun sevenTagRosterValue(tag: PGNSevenTagRosterTag): String {
-        return tagMap[tag.name] ?: "?"
+        return tagMap[tag.name] ?: when (tag) {
+            PGNSevenTagRosterTag.Date -> "????.??.??"
+            PGNSevenTagRosterTag.Result -> PGNGameResultValue.InProgressAbandonedOrUnknown.serialValue
+            else -> "?" // this is the default value for all other seven tag roster tags other than Date
+        }
     }
 
     override fun valueOf(tagName: String): String? {

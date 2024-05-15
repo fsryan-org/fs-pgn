@@ -26,6 +26,9 @@ fun PGNSquare.isLight(): Boolean = numericValue % 2 == 0
 @JsExport
 fun PGNSquare.isDark(): Boolean = !isLight()
 
+val PGNSquare.pgnString: String
+    get() = "${file}${rank}"
+
 /**
  * @return the square that is represented by the given two-character
  */
@@ -100,4 +103,8 @@ private value class PGNSquareValue(override val numericValue: Int): PGNSquare {
         }
     override val rank: Int
         get() = numericValue / 8 + 1
+
+    override fun toString(): String {
+        return "${file}${rank}"
+    }
 }

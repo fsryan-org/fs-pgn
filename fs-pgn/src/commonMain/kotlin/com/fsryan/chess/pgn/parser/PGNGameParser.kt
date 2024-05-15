@@ -8,7 +8,7 @@ interface PGNGameParser: PGNParser<PGNGame>
 
 internal fun PGNGameParser(
     tagSectionParser: PGNTagSectionParser = PGNTagSectionParser(),
-    moveTextSectionParser: PGNMoveTextSectionParser
+    moveTextSectionParser: PGNMoveTextSectionParser = PGNMoveTextSectionParser()
 ): PGNGameParser = PGNGameParserImpl(tagSectionParser, moveTextSectionParser)
 
 internal fun DefaultPGNGameParser(moveIsBlack: Boolean): PGNGameParser {

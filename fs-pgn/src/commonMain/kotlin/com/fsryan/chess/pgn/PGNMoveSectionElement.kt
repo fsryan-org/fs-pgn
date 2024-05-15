@@ -53,7 +53,7 @@ fun PGNGamePly(
     _comments = comments,
     isBlack = isBlack,
     numberIndicator = numberIndicator,
-    numericAnnotationGlyph = numericAnnotationGlyph,
+    _numericAnnotationGlyph = numericAnnotationGlyph,
     recursiveAnnotationVariation = recursiveAnnotationVariation,
     sanMove = sanMove
 )
@@ -115,10 +115,12 @@ private data class PGNGamePlyData(
     internal val _comments: List<String>,
     override val isBlack: Boolean,
     override val numberIndicator: Int?,
-    override val numericAnnotationGlyph: PGNNumericAnnotationGlyph?,
+    private  val _numericAnnotationGlyph: PGNNumericAnnotationGlyph?,
     override val recursiveAnnotationVariation: PGNRecursiveVariationAnnotation?,
     override val sanMove: PGNSANMove
 ): PGNGamePly {
     override val commentsArray: Array<String>
         get() = _comments.toTypedArray()
+    override val numericAnnotationGlyph: PGNNumericAnnotationGlyph?
+        get() = sanMove.suffixAnnotation?.nagId?.let { PGNNumericAnnotationGlyph.fromId(it) } ?: _numericAnnotationGlyph
 }

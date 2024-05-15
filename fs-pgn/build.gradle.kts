@@ -52,6 +52,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(project(":fs-pgn-testtools"))
             implementation(libs.okio.fakefilesystem)
         }
 
