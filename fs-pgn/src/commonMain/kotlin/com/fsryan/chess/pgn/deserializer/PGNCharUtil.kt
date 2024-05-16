@@ -4,7 +4,7 @@ package com.fsryan.chess.pgn.deserializer
  * A symbol token starts with a letter or digit character
  *
  * @see isValidSymbolContinuationChar
- * @see okio.BufferedSource.readPGNSymbolToken
+ * @see okio.BufferedSource.deserializePGNSymbolToken
  */
 internal val Char.isValidStartingSymbolChar: Boolean get() = when {
     code < 48 -> false

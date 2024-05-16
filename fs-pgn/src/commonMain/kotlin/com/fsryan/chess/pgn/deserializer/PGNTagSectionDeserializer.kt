@@ -55,7 +55,7 @@ internal fun BufferedSource.deserializeGameTagPair(position: Int): PGNDeserializ
 
     var currentPosition = position
     currentPosition += readWhitespace(position)
-    val tagName = readPGNSymbolToken(position)
+    val tagName = deserializePGNSymbolToken(position)
     currentPosition += tagName.charactersRead
     currentPosition += readWhitespace(currentPosition)
 
@@ -71,7 +71,7 @@ internal fun BufferedSource.deserializeGameTagPair(position: Int): PGNDeserializ
     )
     currentPosition++
 
-    val valueResult = readPGNStringToken(currentPosition)
+    val valueResult = deserializePGNStringToken(currentPosition)
     currentPosition += valueResult.charactersRead
     currentPosition += readWhitespace(currentPosition)
 

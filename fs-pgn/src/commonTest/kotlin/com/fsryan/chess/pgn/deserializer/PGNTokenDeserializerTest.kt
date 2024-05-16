@@ -18,7 +18,7 @@ class PGNTokenDeserializerTest {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                buf.readPGNSymbolToken(0)
+                buf.deserializePGNSymbolToken(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading symbol", e.message)
@@ -33,7 +33,7 @@ class PGNTokenDeserializerTest {
             Buffer().use { buf ->
                 buf.write(invalidChar.toString().encodeUtf8())
                 try {
-                    buf.readPGNSymbolToken(0)
+                    buf.deserializePGNSymbolToken(0)
                     fail("Should have thrown PGNParseException")
                 } catch (e: PGNIllegalSymbolStartingCharacterException) {
                     assertEquals(invalidChar, e.char)
@@ -48,7 +48,7 @@ class PGNTokenDeserializerTest {
         Buffer().use { buf ->
             val expected = "aLPHA"
             buf.write("$expected ".encodeUtf8())
-            val actual = buf.readPGNSymbolToken(0)
+            val actual = buf.deserializePGNSymbolToken(0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -58,7 +58,7 @@ class PGNTokenDeserializerTest {
         Buffer().use { buf ->
             val expected = "AlphaAgain"
             buf.write("$expected ".encodeUtf8())
-            val actual = buf.readPGNSymbolToken(0)
+            val actual = buf.deserializePGNSymbolToken(0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -68,7 +68,7 @@ class PGNTokenDeserializerTest {
         Buffer().use { buf ->
             val expected = "1AlphaAgain"
             buf.write("$expected ".encodeUtf8())
-            val actual = buf.readPGNSymbolToken(0)
+            val actual = buf.deserializePGNSymbolToken(0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -79,7 +79,7 @@ class PGNTokenDeserializerTest {
             Buffer().use { buf ->
                 val expected = "symb${validNonAlphaNumericChar}ol"
                 buf.write("$expected ".encodeUtf8())
-                val actual = buf.readPGNSymbolToken(0)
+                val actual = buf.deserializePGNSymbolToken(0)
                 assertEquals(expected.length, actual.charactersRead)
             }
         }

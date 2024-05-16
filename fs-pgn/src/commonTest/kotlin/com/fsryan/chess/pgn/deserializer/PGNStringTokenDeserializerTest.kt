@@ -19,7 +19,7 @@ class PGNStringTokenDeserializerTest {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                buf.readPGNStringToken(0)
+                buf.deserializePGNStringToken(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading string", e.message)
@@ -35,7 +35,7 @@ class PGNStringTokenDeserializerTest {
                 buf.write(Char(controlChar).toString().encodeUtf8())
 
                 try {
-                    buf.readPGNStringToken(0)
+                    buf.deserializePGNStringToken(0)
                     fail("Should have thrown PGNParseException")
                 } catch (e: PGNStringControlCharacterFoundException) {
                     assertEquals("Unexpected control character found while reading string", e.message)
@@ -50,7 +50,7 @@ class PGNStringTokenDeserializerTest {
             buf.write("\\a".encodeUtf8())
 
             try {
-                buf.readPGNStringToken(0)
+                buf.deserializePGNStringToken(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNCannotEscapeCharacterException) {
                 assertEquals('a', e.char)
@@ -63,7 +63,7 @@ class PGNStringTokenDeserializerTest {
     fun shouldReturnEmptyOnEmptyString() {
         Buffer().use { buf ->
             buf.write("\"".encodeUtf8())
-            val output = buf.readPGNStringToken(0)
+            val output = buf.deserializePGNStringToken(0)
             assertEquals(1, output.charactersRead)
             assertEquals("", output.value)
         }
@@ -74,7 +74,7 @@ class PGNStringTokenDeserializerTest {
         val expected = "This is a full string. Isn't that great?"
         Buffer().use { buf ->
             buf.write("$expected\"".encodeUtf8())
-            val output = buf.readPGNStringToken(0)
+            val output = buf.deserializePGNStringToken(0)
             assertEquals(expected.length + 1, output.charactersRead)    // <-- the final " should be read
             assertEquals(expected, output.value)
         }
@@ -86,7 +86,7 @@ class PGNStringTokenDeserializerTest {
         val expected = "This is a full string with a \". Isn't that great?"
         Buffer().use { buf ->
             buf.write("$input\"".encodeUtf8())
-            val output = buf.readPGNStringToken(0)
+            val output = buf.deserializePGNStringToken(0)
             assertEquals(input.length + 1, output.charactersRead)    // <-- the final " should be read
             assertEquals(expected, output.value)
         }
@@ -98,7 +98,7 @@ class PGNStringTokenDeserializerTest {
         val expected = "This is a full string with a \\. Isn't that great?"
         Buffer().use { buf ->
             buf.write("$input\"".encodeUtf8())
-            val output = buf.readPGNStringToken(0)
+            val output = buf.deserializePGNStringToken(0)
             assertEquals(input.length + 1, output.charactersRead)    // <-- the final " should be read
             assertEquals(expected, output.value)
         }
