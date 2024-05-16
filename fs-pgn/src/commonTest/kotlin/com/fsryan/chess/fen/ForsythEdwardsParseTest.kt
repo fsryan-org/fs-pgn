@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.fen
+package com.fsryan.chess.fen
 
 import com.fsryan.chess.fen.FEN_STANDARD_STARTING_POSITION
 import com.fsryan.chess.fen.ForsythEdwardsNotation
