@@ -23,7 +23,7 @@ class PGNGameDeserializerTest {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             val result = buf.deserializePGNGame(0)
-            assertTrue(result.value.elements.isEmpty())
+            assertTrue(result.value.elementsArray.isEmpty())
             assertEquals(0, result.charactersRead)
         }
     }
@@ -45,7 +45,7 @@ class PGNGameDeserializerTest {
             assertEquals("Spassky, Boris V.", actualTags.black)
             assertEquals(PGNGameResultValue.Draw, actualTags.result)
 
-            assertEquals(86, result.value.elements.size)
+            assertEquals(86, result.value.elementsArray.size)
         }
     }
 }

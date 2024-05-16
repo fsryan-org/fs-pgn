@@ -3,7 +3,7 @@ package com.fsryan.chess.pgn.serializer
 import com.fsryan.chess.pgn.PGNGame
 import com.fsryan.chess.pgn.PGNGameDatabase
 import com.fsryan.chess.pgn.all
-import kotlin.jvm.JvmInline
+import com.fsryan.chess.pgn.elements
 
 internal fun StringBuilder.addPGNGameDatabase(database: PGNGameDatabase): StringBuilder {
     database.all.forEach { game ->
