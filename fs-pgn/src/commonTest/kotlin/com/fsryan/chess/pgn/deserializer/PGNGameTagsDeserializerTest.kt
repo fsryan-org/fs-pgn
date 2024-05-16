@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.fen.FEN_STANDARD_STARTING_POSITION
 import com.fsryan.chess.fen.ForsythEdwardsNotation
@@ -37,16 +37,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class PGNTagSectionParserTest {
-    
-    val parserUnderTest = PGNTagSectionParser()
+class PGNGameTagsDeserializerTest {
 
     @Test
     fun shouldReturnEmptyMapOnEmptyInput() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             val expected = PGNGameTags(emptyMap())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(0, actual.charactersRead)
             assertEquals(expected, actual.value)
         }
@@ -58,7 +56,7 @@ class PGNTagSectionParserTest {
             val input = "[KEY \"Value\"]"
             val expected = PGNGameTags(mapOf("KEY" to "Value"))
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(expected, actual.value)
         }
@@ -72,7 +70,7 @@ class PGNTagSectionParserTest {
             val input = "$tag1\n$tag2"
             val expected = PGNGameTags(mapOf("KEY" to "Value", "KEY2" to "Value2"))
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(expected, actual.value)
         }
@@ -86,7 +84,7 @@ class PGNTagSectionParserTest {
             val input = "$tag1\n$tag2"
             buf.write(input.encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeGameTags(0)
             } catch (e: PGNDuplicateTagException) {
                 assertEquals(tag1.length + 2, e.position)   // <-- the newline and opening tag are added
                 assertEquals("KEY", e.key)
@@ -107,7 +105,7 @@ class PGNTagSectionParserTest {
                 [Result "1/2-1/2"]
             """.trimIndent()
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("F/S Return Match", actual.value.event)
             assertEquals("Belgrade, Serbia JUG", actual.value.site)
@@ -144,7 +142,7 @@ class PGNTagSectionParserTest {
                 40. Rd6 Kc5 41. Ra6 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
             """.trimIndent()
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(167, actual.charactersRead)
             assertEquals("F/S Return Match", actual.value.event)
             assertEquals("Belgrade, Serbia JUG", actual.value.site)
@@ -165,7 +163,7 @@ class PGNTagSectionParserTest {
         val input = "[Annotator \"John Doe\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("John Doe", actual.value.annotator)
             assertEquals(listOf("John Doe"), actual.value.annotators)
@@ -177,7 +175,7 @@ class PGNTagSectionParserTest {
         val input = "[Annotator \"Jane Doe:John Doe\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Jane Doe:John Doe", actual.value.annotator)
             assertEquals(listOf("Jane Doe", "John Doe"), actual.value.annotators)
@@ -189,7 +187,7 @@ class PGNTagSectionParserTest {
         val input = "[Mode \"OTB\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("OTB", actual.value.mode)
         }
@@ -200,7 +198,7 @@ class PGNTagSectionParserTest {
         val input = "[PlyCount \"42\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(42, actual.value.plyCount)
         }
@@ -211,7 +209,7 @@ class PGNTagSectionParserTest {
         val input = "[Black \"Jane Doe:John Doe\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Jane Doe:John Doe", actual.value.black)
             assertEquals(listOf("Jane Doe", "John Doe"), actual.value.blackPlayers)
@@ -223,7 +221,7 @@ class PGNTagSectionParserTest {
         val input = "[White \"Jane Doe:John Doe\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Jane Doe:John Doe", actual.value.white)
             assertEquals(listOf("Jane Doe", "John Doe"), actual.value.whitePlayers)
@@ -235,7 +233,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackTitle \"WIM\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("WIM", actual.value.blackTitle)
             assertEquals(listOf("WIM"), actual.value.blackTitles)
@@ -247,7 +245,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackTitle \"WIM:WGM\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("WIM:WGM", actual.value.blackTitle)
             assertEquals(listOf("WIM", "WGM"), actual.value.blackTitles)
@@ -259,7 +257,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteTitle \"GM\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("GM", actual.value.whiteTitle)
             assertEquals(listOf("GM"), actual.value.whiteTitles)
@@ -271,7 +269,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteTitle \"GM:IM\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("GM:IM", actual.value.whiteTitle)
             assertEquals(listOf("GM", "IM"), actual.value.whiteTitles)
@@ -283,7 +281,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackElo \"1234\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(1234, actual.value.blackELOAverage)
             assertEquals(listOf(1234), actual.value.blackELOs)
@@ -295,7 +293,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackElo \"1234:2345\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals((1234 + 2345) / 2, actual.value.blackELOAverage)
             assertEquals(listOf(1234, 2345), actual.value.blackELOs)
@@ -307,7 +305,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteElo \"1234\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(1234, actual.value.whiteELOAverage)
             assertEquals(listOf(1234), actual.value.whiteELOs)
@@ -319,7 +317,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteElo \"1234:2345\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals((1234 + 2345) / 2, actual.value.whiteELOAverage)
             assertEquals(listOf(1234, 2345), actual.value.whiteELOs)
@@ -331,7 +329,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackUSCF \"1234\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(1234, actual.value.blackUSCFAverage)
             assertEquals(listOf(1234), actual.value.blackUSCFs)
@@ -343,7 +341,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackUSCF \"1234:2345\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals((1234 + 2345) / 2, actual.value.blackUSCFAverage)
             assertEquals(listOf(1234, 2345), actual.value.blackUSCFs)
@@ -355,7 +353,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteUSCF \"1234\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(1234, actual.value.whiteUSCFAverage)
             assertEquals(listOf(1234), actual.value.whiteUSCFs)
@@ -367,7 +365,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteUSCF \"1234:2345\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals((1234 + 2345) / 2, actual.value.whiteUSCFAverage)
             assertEquals(listOf(1234, 2345), actual.value.whiteUSCFs)
@@ -379,7 +377,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackNA \"email+black@example.com\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("email+black@example.com", actual.value.blackNetworkAddress)
             assertEquals(listOf("email+black@example.com"), actual.value.blackNetworkAddresses)
@@ -391,7 +389,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackNA \"email+black1@example.com:email+black2@example.com\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("email+black1@example.com:email+black2@example.com", actual.value.blackNetworkAddress)
             assertEquals(listOf("email+black1@example.com", "email+black2@example.com"), actual.value.blackNetworkAddresses)
@@ -403,7 +401,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteNA \"email+white@example.com\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("email+white@example.com", actual.value.whiteNetworkAddress)
             assertEquals(listOf("email+white@example.com"), actual.value.whiteNetworkAddresses)
@@ -415,7 +413,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteNA \"email+white1@example.com:email+white2@example.com\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("email+white1@example.com:email+white2@example.com", actual.value.whiteNetworkAddress)
             assertEquals(listOf("email+white1@example.com", "email+white2@example.com"), actual.value.whiteNetworkAddresses)
@@ -427,7 +425,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackType \"human\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(PGNPlayerType.Human, actual.value.blackPlayerType)
             assertEquals(listOf(PGNPlayerType.Human), actual.value.blackPlayerTypes)
@@ -439,7 +437,7 @@ class PGNTagSectionParserTest {
         val input = "[BlackType \"human:program\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(null, actual.value.blackPlayerType)
             assertEquals(listOf(PGNPlayerType.Human, PGNPlayerType.Computer), actual.value.blackPlayerTypes)
@@ -451,7 +449,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteType \"program\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(PGNPlayerType.Computer, actual.value.whitePlayerType)
         }
@@ -462,7 +460,7 @@ class PGNTagSectionParserTest {
         val input = "[WhiteType \"human:program\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(null, actual.value.whitePlayerType)
             assertEquals(listOf(PGNPlayerType.Human, PGNPlayerType.Computer), actual.value.whitePlayerTypes)
         }
@@ -473,7 +471,7 @@ class PGNTagSectionParserTest {
         val input = "[SetUp \"1\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertTrue(actual.value.nonStandardStartingPosition())
             assertFalse(actual.value.standardStartingPosition())
@@ -485,7 +483,7 @@ class PGNTagSectionParserTest {
         val input = "[SetUp \"0\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertFalse(actual.value.nonStandardStartingPosition())
             assertTrue(actual.value.standardStartingPosition())
@@ -497,7 +495,7 @@ class PGNTagSectionParserTest {
         Buffer().use { buf ->
             val input = "".trimIndent()
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(FEN_STANDARD_STARTING_POSITION, actual.value.fen)
             assertEquals(ForsythEdwardsNotation(FEN_STANDARD_STARTING_POSITION), actual.value.startingFEN())
@@ -509,7 +507,7 @@ class PGNTagSectionParserTest {
         Buffer().use { buf ->
             val input = "[SetUp \"1\"]\n[FEN \"rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 2\"]"
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 2", actual.value.fen)
             assertEquals(ForsythEdwardsNotation("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 2"), actual.value.startingFEN())
@@ -521,7 +519,7 @@ class PGNTagSectionParserTest {
         val input = "[EventSponsor \"ACME\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("ACME", actual.value.eventSponsor)
         }
@@ -532,7 +530,7 @@ class PGNTagSectionParserTest {
         val input = "[Section \"Open\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Open", actual.value.eventSection)
         }
@@ -543,7 +541,7 @@ class PGNTagSectionParserTest {
         val input = "[Stage \"Preliminary\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Preliminary", actual.value.eventStage)
         }
@@ -554,7 +552,7 @@ class PGNTagSectionParserTest {
         val input = "[Board \"1\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals(1, actual.value.boardNumber)
         }
@@ -565,7 +563,7 @@ class PGNTagSectionParserTest {
         val input = "[Opening \"Sicilian Defense\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Sicilian Defense", actual.value.opening)
         }
@@ -576,7 +574,7 @@ class PGNTagSectionParserTest {
         val input = "[Variation \"Sicilian Defense: Najdorf Variation\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Sicilian Defense: Najdorf Variation", actual.value.variation)
         }
@@ -587,7 +585,7 @@ class PGNTagSectionParserTest {
         val input = "[SubVariation \"Sicilian Defense: Najdorf Variation: English Attack\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Sicilian Defense: Najdorf Variation: English Attack", actual.value.subVariation)
         }
@@ -598,7 +596,7 @@ class PGNTagSectionParserTest {
         val input = "[ECO \"B90\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("B90", actual.value.eco)
         }
@@ -609,7 +607,7 @@ class PGNTagSectionParserTest {
         val input = "[NIC \"Sicilian Defense: Najdorf Variation: English Attack\"]"
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.deserializeGameTags(0)
             assertEquals(input.length, actual.charactersRead)
             assertEquals("Sicilian Defense: Najdorf Variation: English Attack", actual.value.nic)
         }
@@ -621,7 +619,7 @@ class PGNTagSectionParserTest {
             val input = "[Termination \"${termination.serialValue}\"]"
             Buffer().use { buf ->
                 buf.write(input.encodeUtf8())
-                val actual = parserUnderTest.parse(buf, 0)
+                val actual = buf.deserializeGameTags(0)
                 assertEquals(input.length, actual.charactersRead)
                 assertEquals(termination, actual.value.termination)
             }

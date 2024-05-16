@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNCheckStatus
 import com.fsryan.chess.pgn.PGNGamePiece
@@ -15,14 +15,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class PGNElementParserTest {
+class PGNElementDeserializerTest {
 
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReachedWhileReading() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = true)).parse(buf, 0)
+                buf.deserializePGNElement(0, moveIsBlack = true)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading PGN element", e.message)
@@ -52,7 +52,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = true)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = true)
             assertEquals(expected, result.value)
             assertEquals(2, result.charactersRead)
         }
@@ -80,7 +80,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = true)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = true)
             assertEquals(expected, result.value)
             assertEquals("1... e5".length, result.charactersRead)
         }
@@ -110,7 +110,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = true)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = true)
             assertEquals(expected, result.value)
             assertEquals(input.length, result.charactersRead)
         }
@@ -140,7 +140,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2 /* we read the whitespace, but not the next element */, result.charactersRead)
         }
@@ -191,7 +191,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length, result.charactersRead)
         }
@@ -284,7 +284,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length, result.charactersRead)
         }
@@ -313,7 +313,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -342,7 +342,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -372,7 +372,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -402,7 +402,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -431,7 +431,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -460,7 +460,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -490,7 +490,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }
@@ -520,7 +520,7 @@ class PGNElementParserTest {
                     suffixAnnotation = null
                 )
             )
-            val result = PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = false)).parse(buf, 0)
+            val result = buf.deserializePGNElement(0, moveIsBlack = false)
             assertEquals(expected, result.value)
             assertEquals(input.length - 2, result.charactersRead)
         }

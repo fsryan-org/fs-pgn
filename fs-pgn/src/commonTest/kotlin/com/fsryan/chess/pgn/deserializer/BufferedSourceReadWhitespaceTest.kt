@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8

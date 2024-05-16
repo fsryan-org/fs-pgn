@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNCheckStatus
 import com.fsryan.chess.pgn.PGNGamePiece
@@ -12,17 +12,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PGNMoveTextSectionParserTest {
-
-    internal val parserUnderTest = PGNMoveTextSectionParser(
-        elementParser = { moveIsBlack -> PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = moveIsBlack)) }
-    )
+class PGNMoveTextSectionDeserializerTest {
 
     @Test
     fun shouldReturnEmptyListWhenEmpty() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveTextSection(0)
             assertTrue(result.value.isEmpty())
             assertEquals(0, result.charactersRead)
         }
@@ -33,7 +29,7 @@ class PGNMoveTextSectionParserTest {
         Buffer().use { buf ->
             val input = "1. e4"
             buf.write(input.encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveTextSection(0)
             assertEquals(1, result.value.size)
             assertEquals(1, (result.value[0] as PGNGamePly).numberIndicator)
             assertEquals(
@@ -59,7 +55,7 @@ class PGNMoveTextSectionParserTest {
         Buffer().use { buf ->
             val input = "1. e4 e5 2. Nf3 Nc6"
             buf.write(input.encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveTextSection(0)
             assertEquals(4, result.value.size)
             assertEquals(1, (result.value[0] as PGNGamePly).numberIndicator)
             assertEquals(
@@ -136,7 +132,7 @@ class PGNMoveTextSectionParserTest {
                 40. Rd6 Kc5 41. Ra6 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
             """.trimIndent()
             buf.write(input.encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveTextSection(0)
             assertEquals(86, result.value.size)
         }
     }

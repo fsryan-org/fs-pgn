@@ -1,7 +1,6 @@
 package com.fsryan.chess.pgn.serializer
 
-import com.fsryan.chess.pgn.parser.PGNGameParser
-import com.fsryan.chess.pgn.parser.PGNMoveTextSectionParser
+import com.fsryan.chess.pgn.deserializer.deserializePGNGame
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
 import okio.use
@@ -28,11 +27,12 @@ class PGNGameSerializerTest {
             27. Qe3 Qg5 28. Qxg5 hxg5 29. b3 Ke6 30. a3 Kd6 31. axb4 cxb4 32. Ra5 Nd5 33.
             f3 Bc8 34. Kf2 Bf5 35. Ra7 g6 36. Ra6+ Kc5 37. Ke1 Nf4 38. g3 Nxh3 39. Kd2 Kb5
             40. Rd6 Kc5 41. Ra6 Nf2 42. g4 Bd3 43. Re6 1/2-1/2
+            
         """.trimIndent()
 
         Buffer().use { buf ->
             buf.write(input.encodeUtf8())
-            val deserialized = PGNGameParser(moveTextSectionParser = PGNMoveTextSectionParser()).parse(buf, 0)
+            val deserialized = buf.deserializePGNGame(0)
 
             val serializedGame = StringBuilder().addPGNGame(deserialized.value).toString()
             assertEquals(input, serializedGame)

@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.all
 import com.fsryan.chess.pgn.readResourceFile
@@ -7,16 +7,12 @@ import okio.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PGNGameDatabaseParserTest {
-
-    internal val parserUnderTest = PGNGameDatabaseParser(
-        gameParser = DefaultPGNGameParser(moveIsBlack = false)
-    )
+class PGNGameDatabaseDeserializerTest {
 
     @Test
     fun shouldReadSamplePGNWithNoComments() {
         readResourceFile("Nakamura.pgn".toPath()).use { buf ->
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializePGNGameDatabase(0)
             assertEquals(7307, result.value.all.size)
         }
     }

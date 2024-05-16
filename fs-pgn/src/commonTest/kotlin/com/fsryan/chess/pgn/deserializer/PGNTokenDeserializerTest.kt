@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNIllegalSymbolStartingCharacterException
 import com.fsryan.chess.pgn.PGNParseException
@@ -11,16 +11,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class PGNTagNameParserTest {
-    
-    val parserUnderTest = PGNTagNameParser()
+class PGNTokenDeserializerTest {
     
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReached() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.readPGNSymbolToken(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading symbol", e.message)
@@ -35,7 +33,7 @@ class PGNTagNameParserTest {
             Buffer().use { buf ->
                 buf.write(invalidChar.toString().encodeUtf8())
                 try {
-                    parserUnderTest.parse(buf, 0)
+                    buf.readPGNSymbolToken(0)
                     fail("Should have thrown PGNParseException")
                 } catch (e: PGNIllegalSymbolStartingCharacterException) {
                     assertEquals(invalidChar, e.char)
@@ -50,7 +48,7 @@ class PGNTagNameParserTest {
         Buffer().use { buf ->
             val expected = "aLPHA"
             buf.write("$expected ".encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.readPGNSymbolToken(0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -60,7 +58,7 @@ class PGNTagNameParserTest {
         Buffer().use { buf ->
             val expected = "AlphaAgain"
             buf.write("$expected ".encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.readPGNSymbolToken(0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -70,7 +68,7 @@ class PGNTagNameParserTest {
         Buffer().use { buf ->
             val expected = "1AlphaAgain"
             buf.write("$expected ".encodeUtf8())
-            val actual = parserUnderTest.parse(buf, 0)
+            val actual = buf.readPGNSymbolToken(0)
             assertEquals(expected.length, actual.charactersRead)
         }
     }
@@ -81,7 +79,7 @@ class PGNTagNameParserTest {
             Buffer().use { buf ->
                 val expected = "symb${validNonAlphaNumericChar}ol"
                 buf.write("$expected ".encodeUtf8())
-                val actual = parserUnderTest.parse(buf, 0)
+                val actual = buf.readPGNSymbolToken(0)
                 assertEquals(expected.length, actual.charactersRead)
             }
         }

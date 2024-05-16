@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNParseException
 import okio.Buffer
@@ -10,16 +10,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class PGNMoveNumberIndicationParserTest {
-    
-    internal val parserUnderTest = PGNMoveNumberIndicationParser()
+class PGNMoveNumberIndicationDeserializerTest {
 
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReached() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeMoveNumberIndication(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading integer", e.message)
@@ -32,7 +30,7 @@ class PGNMoveNumberIndicationParserTest {
     fun shouldReturnNumberWhenNumberIsSingleDigit() {
         Buffer().use { buf ->
             buf.write("1.".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveNumberIndication(0)
             assertEquals(1, result.value)
             assertEquals(2, result.charactersRead)
         }
@@ -42,7 +40,7 @@ class PGNMoveNumberIndicationParserTest {
     fun shouldReturnNumberWhenNumberIsSingleDigitAndNoPeriodDelimiterFollows() {
         Buffer().use { buf ->
             buf.write("2".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveNumberIndication(0)
             assertEquals(2, result.value)
             assertEquals(1, result.charactersRead)
         }
@@ -52,7 +50,7 @@ class PGNMoveNumberIndicationParserTest {
     fun shouldReturnNumberWhenNumberIsMultipleDigits() {
         Buffer().use { buf ->
             buf.write("22.".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveNumberIndication(0)
             assertEquals(22, result.value)
             assertEquals(3, result.charactersRead)
         }
@@ -62,7 +60,7 @@ class PGNMoveNumberIndicationParserTest {
     fun shouldReturnNumberWhenNumberIsMultipleDigitsAndNoPeriodDelimiterFollows() {
         Buffer().use { buf ->
             buf.write("22".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveNumberIndication(0)
             assertEquals(22, result.value)
             assertEquals(2, result.charactersRead)
         }
@@ -72,7 +70,7 @@ class PGNMoveNumberIndicationParserTest {
     fun shouldReturnNumberWhenNumberIsMultipleDigitsAndMultiplePeriodDelimiersFollow() {
         Buffer().use { buf ->
             buf.write("22...".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveNumberIndication(0)
             assertEquals(22, result.value)
             assertEquals(5, result.charactersRead)
         }
@@ -82,7 +80,7 @@ class PGNMoveNumberIndicationParserTest {
     fun shouldReturnNumberWhenNumberIsMultipleDigitsAndNonDelimiterFollows() {
         Buffer().use { buf ->
             buf.write("22a".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeMoveNumberIndication(0)
             assertEquals(22, result.value)
             assertEquals(2, result.charactersRead)
         }

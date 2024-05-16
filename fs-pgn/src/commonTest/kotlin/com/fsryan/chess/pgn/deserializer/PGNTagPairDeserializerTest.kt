@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNParseException
 import com.fsryan.chess.pgn.PGNUnexpectedTagTerminator
@@ -12,16 +12,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class PGNTagPairParserTest {
-    
-    val parserUnderTest = PGNTagPairParser()
+class PGNTagPairDeserializerTest {
 
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReachedWhileReadingSymbol() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeGameTagPair(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading symbol", e.message)
@@ -35,7 +33,7 @@ class PGNTagPairParserTest {
         Buffer().use { buf ->
             buf.write("KEY ".encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeGameTagPair(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected error while reading tag pair", e.message)
@@ -49,7 +47,7 @@ class PGNTagPairParserTest {
         Buffer().use { buf ->
             buf.write("KEY \"Value\"".encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeGameTagPair(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected error while reading tag pair", e.message)
@@ -66,7 +64,7 @@ class PGNTagPairParserTest {
             val expected = expectedKey to expectedValue
             val input = "$expectedKey \"$expectedValue\"]"
             buf.write(input.encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeGameTagPair(0)
             assertEquals(input.length, result.charactersRead)
             assertEquals(expected, result.value)
         }
@@ -80,7 +78,7 @@ class PGNTagPairParserTest {
             val expected = expectedKey to expectedValue
             val input = "\n\t $expectedKey\n\t \"$expectedValue\"\n\t ]"
             buf.write(input.encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializeGameTagPair(0)
             assertEquals(input.length, result.charactersRead)
             assertEquals(expected, result.value)
         }
@@ -94,7 +92,7 @@ class PGNTagPairParserTest {
             val input = "$expectedKey \"$expectedValue\"}"
             buf.write(input.encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeGameTagPair(0)
                 fail("Should have thrown PGNUnexpectedTagTerminator")
             } catch (e: PGNUnexpectedTagTerminator) {
                 assertEquals(input.length - 1, e.position)
@@ -111,7 +109,7 @@ class PGNTagPairParserTest {
             val input = "$expectedKey =\"$expectedValue\"]"
             buf.write(input.encodeUtf8())
             try {
-                parserUnderTest.parse(buf, 0)
+                buf.deserializeGameTagPair(0)
                 fail("Should have thrown PGNUnexpectedTagValueDelimiter")
             } catch (e: PGNUnexpectedTagValueDelimiter) {
                 assertEquals(4, e.position)

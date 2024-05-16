@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNCastle
 import com.fsryan.chess.pgn.PGNCheckStatus
@@ -17,14 +17,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class PGNSANMoveParserTest {
+class PGNSANMoveDeserializerTest {
 
     @Test
     fun shouldThrowParseExceptionWhenEndOfFileReached() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                buf.deserializeSANMove(0, moveIsBlack = false)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading PGN SAN move", e.message)
@@ -49,7 +49,7 @@ class PGNSANMoveParserTest {
                         sourceRank = null,
                         suffixAnnotation = null
                     )
-                    val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                    val result = buf.deserializeSANMove(0, moveIsBlack = false)
                     assertEquals(expected, result.value)
                 }
             }
@@ -74,7 +74,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = suffixAnnotation
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = false)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -100,7 +100,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = null
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = false)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -127,7 +127,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = suffixAnnotation
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -154,7 +154,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = null
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = rank == 1).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = rank == 1)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -181,7 +181,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = suffixAnnotation
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = rank == 1).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = rank == 1)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -209,7 +209,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = null
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = rank == 1).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = rank == 1)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -238,7 +238,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = suffixAnnotation
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = rank == 1).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = rank == 1)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -275,7 +275,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = null
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = false)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -311,7 +311,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = suffixAnnotation
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -348,7 +348,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = null
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -386,7 +386,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = suffixAnnotation
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -425,7 +425,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = null
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = destinationRank == 1).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = destinationRank == 1)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -465,7 +465,7 @@ class PGNSANMoveParserTest {
                                         sourceRank = null,
                                         suffixAnnotation = suffixAnnotation
                                     )
-                                    val result = PGNSANMoveParser(moveIsBlack = destinationRank == 1).parse(buf, 0)
+                                    val result = buf.deserializeSANMove(0, moveIsBlack = destinationRank == 1)
                                     assertEquals(expected, result.value)
                                 }
                             }
@@ -496,7 +496,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = null
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = false)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -525,7 +525,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = suffixAnnotation
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -555,7 +555,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = null
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -586,7 +586,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = suffixAnnotation
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -618,7 +618,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = null
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -651,7 +651,7 @@ class PGNSANMoveParserTest {
                                         sourceRank = null,
                                         suffixAnnotation = suffixAnnotation
                                     )
-                                    val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                    val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                     assertEquals(expected, result.value)
                                 }
                             }
@@ -683,7 +683,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = null
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -714,7 +714,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = suffixAnnotation
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -746,7 +746,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = null,
                                     suffixAnnotation = null
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -779,7 +779,7 @@ class PGNSANMoveParserTest {
                                         sourceRank = null,
                                         suffixAnnotation = suffixAnnotation
                                     )
-                                    val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                    val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                     assertEquals(expected, result.value)
                                 }
                             }
@@ -813,7 +813,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = sourceRank,
                                 suffixAnnotation = null
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -846,7 +846,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = sourceRank,
                                     suffixAnnotation = suffixAnnotation
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -879,7 +879,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = sourceRank,
                                 suffixAnnotation = null
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -912,7 +912,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = sourceRank,
                                     suffixAnnotation = suffixAnnotation
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -946,7 +946,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = sourceRank,
                                     suffixAnnotation = null
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -981,7 +981,7 @@ class PGNSANMoveParserTest {
                                         sourceRank = sourceRank,
                                         suffixAnnotation = suffixAnnotation
                                     )
-                                    val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                    val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                     assertEquals(expected, result.value)
                                 }
                             }
@@ -1016,7 +1016,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = sourceRank,
                                     suffixAnnotation = null
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -1051,7 +1051,7 @@ class PGNSANMoveParserTest {
                                         sourceRank = sourceRank,
                                         suffixAnnotation = suffixAnnotation
                                     )
-                                    val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                    val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                     assertEquals(expected, result.value)
                                 }
                             }
@@ -1086,7 +1086,7 @@ class PGNSANMoveParserTest {
                                     sourceRank = sourceRank,
                                     suffixAnnotation = null
                                 )
-                                val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                 assertEquals(expected, result.value)
                             }
                         }
@@ -1121,7 +1121,7 @@ class PGNSANMoveParserTest {
                                         sourceRank = sourceRank,
                                         suffixAnnotation = suffixAnnotation
                                     )
-                                    val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                                    val result = buf.deserializeSANMove(0, moveIsBlack = false)
                                     assertEquals(expected, result.value)
                                 }
                             }
@@ -1150,7 +1150,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = null
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = false)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -1177,7 +1177,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = suffixAnnotation
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = false)
                             assertEquals(expected, result.value)
                         }
                     }
@@ -1201,7 +1201,7 @@ class PGNSANMoveParserTest {
                 sourceRank = null,
                 suffixAnnotation = null
             )
-            val result = PGNSANMoveParser(moveIsBlack = true).parse(buf, 0)
+            val result = buf.deserializeSANMove(0, moveIsBlack = true)
             assertEquals(expected, result.value)
         }
     }
@@ -1221,7 +1221,7 @@ class PGNSANMoveParserTest {
                 sourceRank = null,
                 suffixAnnotation = null
             )
-            val result = PGNSANMoveParser(moveIsBlack = true).parse(buf, 0)
+            val result = buf.deserializeSANMove(0, moveIsBlack = true)
             assertEquals(expected, result.value)
         }
     }
@@ -1241,7 +1241,7 @@ class PGNSANMoveParserTest {
                 sourceRank = null,
                 suffixAnnotation = null
             )
-            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+            val result = buf.deserializeSANMove(0, moveIsBlack = false)
             assertEquals(expected, result.value)
         }
     }
@@ -1261,7 +1261,7 @@ class PGNSANMoveParserTest {
                 sourceRank = null,
                 suffixAnnotation = null
             )
-            val result = PGNSANMoveParser(moveIsBlack = false).parse(buf, 0)
+            val result = buf.deserializeSANMove(0, moveIsBlack = false)
             assertEquals(expected, result.value)
         }
     }
@@ -1284,7 +1284,7 @@ class PGNSANMoveParserTest {
                             sourceRank = null,
                             suffixAnnotation = null
                         )
-                        val result = PGNSANMoveParser(moveIsBlack = isBlack).parse(buf, 0)
+                        val result = buf.deserializeSANMove(0, moveIsBlack = isBlack)
                         assertEquals(expected, result.value)
                     }
                 }
@@ -1311,7 +1311,7 @@ class PGNSANMoveParserTest {
                                 sourceRank = null,
                                 suffixAnnotation = suffixAnnotation
                             )
-                            val result = PGNSANMoveParser(moveIsBlack = isBlack).parse(buf, 0)
+                            val result = buf.deserializeSANMove(0, moveIsBlack = isBlack)
                             assertEquals(expected, result.value)
                         }
                     }

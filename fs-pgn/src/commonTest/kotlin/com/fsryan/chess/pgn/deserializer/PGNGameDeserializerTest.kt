@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNGameResultValue
 import com.fsryan.chess.pgn.PGNSevenTagRosterTag
@@ -16,19 +16,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PGNGameParserTest {
-
-    internal val parserUnderTest = PGNGameParser(
-        moveTextSectionParser = PGNMoveTextSectionParser(
-            elementParser = { moveIsBlack -> PGNElementParser(sanMoveParser = PGNSANMoveParser(moveIsBlack = moveIsBlack)) }
-        )
-    )
+class PGNGameDeserializerTest {
 
     @Test
     fun shouldReturnEmptyGameWhenEmpty() {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializePGNGame(0)
             assertTrue(result.value.elements.isEmpty())
             assertEquals(0, result.charactersRead)
         }
@@ -37,7 +31,7 @@ class PGNGameParserTest {
     @Test
     fun shouldReadSamplePGNWithNoComments() {
         readResourceFile("one_pgn_no_comments.pgn".toPath()).use { buf ->
-            val result = parserUnderTest.parse(buf, 0)
+            val result = buf.deserializePGNGame(0)
             val actualTags = result.value.tags
             assertEquals("F/S Return Match", actualTags.event)
             assertEquals("Belgrade, Serbia JUG", actualTags.site)

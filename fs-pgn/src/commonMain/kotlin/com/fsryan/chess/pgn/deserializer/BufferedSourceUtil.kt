@@ -1,4 +1,4 @@
-package com.fsryan.chess.pgn.parser
+package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNCannotEscapeCharacterException
 import com.fsryan.chess.pgn.PGNIllegalSymbolStartingCharacterException
@@ -23,7 +23,7 @@ import okio.use
  * quote. Currently, a string is limited to a maximum of 255 characters of
  * data.
  */
-internal fun BufferedSource.readPGNStringToken(position: Int): PGNParserResult<String> {
+internal fun BufferedSource.readPGNStringToken(position: Int): PGNDeserializationResult<String> {
     var charactersRead = 0
     var readingEscapedCharacter = false
     val buf = StringBuilder()
@@ -64,7 +64,7 @@ internal fun BufferedSource.readPGNStringToken(position: Int): PGNParserResult<S
             }
             charactersRead++
         }
-        return PGNFSMResult(charactersRead, buf.toString())
+        return PGNDeserializationResult(charactersRead, buf.toString())
     } catch (ioe: IOException) {
         throw PGNParseException(position + charactersRead, "Unexpected end of file while reading string", ioe)
     }
@@ -83,7 +83,7 @@ internal fun BufferedSource.readPGNStringToken(position: Int): PGNParserResult<S
  * character following the symbol character sequence. Currently, a symbol is
  * limited to a maximum of 255 characters in length.
  */
-internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNParserResult<String> = peek().use { peekable ->
+internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNDeserializationResult<String> = peek().use { peekable ->
     var charactersRead = 0
     val buf = StringBuilder()
     try {
@@ -107,7 +107,7 @@ internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNParserResult<S
             }
         }
         incrementByUTF8CharacterCount(charactersRead)
-        PGNFSMResult(charactersRead, buf.toString())
+        PGNDeserializationResult(charactersRead, buf.toString())
     } catch (ioe: IOException) {
         throw PGNParseException(position + charactersRead, "Unexpected end of file while reading symbol", ioe)
     }
@@ -120,7 +120,7 @@ internal fun BufferedSource.readPGNSymbolToken(position: Int): PGNParserResult<S
  * integer token is terminated just prior to the first non-symbol character
  * following the integer digit sequence.
  */
-internal fun BufferedSource.readIntegerToken(position: Int): PGNParserResult<Int> = peek().use { peekableSource ->
+internal fun BufferedSource.readIntegerToken(position: Int): PGNDeserializationResult<Int> = peek().use { peekableSource ->
     var charactersRead = 0
     val buf = StringBuilder()
     try {
@@ -142,7 +142,7 @@ internal fun BufferedSource.readIntegerToken(position: Int): PGNParserResult<Int
             }
         }
         incrementByUTF8CharacterCount(charactersRead)
-        PGNFSMResult(charactersRead, buf.toString().toInt())
+        PGNDeserializationResult(charactersRead, buf.toString().toInt())
     } catch (ioe: IOException) {
         throw PGNParseException(position + charactersRead, "Unexpected end of file while reading integer", ioe)
     }

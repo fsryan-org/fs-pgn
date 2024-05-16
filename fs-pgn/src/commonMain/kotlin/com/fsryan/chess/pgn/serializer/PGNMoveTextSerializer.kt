@@ -52,7 +52,7 @@ internal fun StringBuilder.addMoveSectionPly(
             string = "$moveNumber${if (ply.isBlack) "..." else "."}",
             prependSeparator = shouldPrependSeparator
         )
-        shouldPrependSeparator = false
+        shouldPrependSeparator = true
     }
 
     addMoveSectionString(string = ply.sanMove.pgnString, prependSeparator = shouldPrependSeparator)
