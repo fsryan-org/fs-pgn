@@ -22,10 +22,10 @@ internal fun BufferedSource.deserializePGNElement(position: Int, moveIsBlack: Bo
     var nextPosition = position
 
     while (true) {
+        nextPosition += readWhitespace(nextPosition)
         if (exhausted()) {
             break
         }
-        nextPosition += readWhitespace(nextPosition)
         var mustBreak = false
         peek().use { peekable ->
             val nextChar = peekable.readUTF8Char()

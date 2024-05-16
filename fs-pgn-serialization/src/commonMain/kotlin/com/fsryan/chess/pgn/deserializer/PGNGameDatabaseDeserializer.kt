@@ -5,7 +5,7 @@ import com.fsryan.chess.pgn.PGNGameDatabase
 import com.fsryan.chess.pgn.PGNParseException
 import okio.BufferedSource
 
-internal fun BufferedSource.deserializePGNGameDatabase(position: Int = 0): PGNDeserializationResult<PGNGameDatabase> {
+fun BufferedSource.deserializePGNGameDatabase(position: Int = 0): PGNDeserializationResult<PGNGameDatabase> {
     val games = mutableListOf<PGNGame>()
 
     var nextPosition = position
@@ -15,14 +15,8 @@ internal fun BufferedSource.deserializePGNGameDatabase(position: Int = 0): PGNDe
             return PGNDeserializationResult(0, PGNGameDatabase(games.toList()))
         }
 
-        try {
-            val gameResult = deserializePGNGame(nextPosition)
-            games.add(gameResult.value)
-            nextPosition += gameResult.charactersRead
-        } catch (e: PGNParseException) {
-            break
-        }
+        val gameResult = deserializePGNGame(nextPosition)
+        games.add(gameResult.value)
+        nextPosition += gameResult.charactersRead
     }
-
-    return PGNDeserializationResult(nextPosition - position, PGNGameDatabase(games.toList()))
 }

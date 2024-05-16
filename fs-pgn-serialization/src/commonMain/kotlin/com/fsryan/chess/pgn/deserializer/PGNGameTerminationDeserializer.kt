@@ -8,7 +8,7 @@ import com.fsryan.chess.pgn.toPGNGameResult
 import okio.BufferedSource
 import okio.IOException
 
-internal fun BufferedSource.deserializeGameTermination(position: Int): PGNDeserializationResult<PGNGameResult> {
+internal fun BufferedSource.deserializePGNGameResult(position: Int): PGNDeserializationResult<PGNGameResult> {
     if (exhausted()) {
         throw PGNParseException(position, "Unexpected end of file while reading game termination")
     }

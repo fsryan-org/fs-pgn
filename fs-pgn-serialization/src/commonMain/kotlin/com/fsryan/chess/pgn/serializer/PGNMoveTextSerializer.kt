@@ -63,22 +63,25 @@ internal fun StringBuilder.addMoveSectionPly(
         addMoveSectionString(string = "{$comment}", prependSeparator = true)
     }
 
-    ply.recursiveAnnotationVariation?.let { addRecursiveAnnotationVariation(it, moveNumber, ply.isBlack) }
+    ply.recursiveAnnotationVariation?.let {
+        addRecursiveAnnotationVariation(variation = it, firstMoveNumber = moveNumber, firstMoveIsBlack = ply.isBlack)
+    }
 
     return this
 }
 
 internal fun StringBuilder.addRecursiveAnnotationVariation(
     variation: PGNRecursiveVariationAnnotation,
-    moveNumber: Int,
-    initialMoveBlack: Boolean
+    firstMoveNumber: Int,
+    firstMoveIsBlack: Boolean
 ): StringBuilder {
     addMoveSectionString("(", prependSeparator = true)
     variation.plies.forEachIndexed { index, ply ->
-        val serializeMoveNumber = !ply.isBlack || (initialMoveBlack && index == 0)
+        val serializeMoveNumber = index == 0 || !ply.isBlack
+        val moveNumberOffset = if (firstMoveIsBlack) (index + 1) / 2 else index / 2
         addMoveSectionPly(
             ply = ply,
-            moveNumber = moveNumber,
+            moveNumber = firstMoveNumber + moveNumberOffset,
             prependSeparator = index != 0,
             serializeMoveNumber = serializeMoveNumber
         )

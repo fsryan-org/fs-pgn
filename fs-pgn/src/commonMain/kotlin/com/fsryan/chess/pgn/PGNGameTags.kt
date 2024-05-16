@@ -205,8 +205,7 @@ interface PGNGameTags {
      * In a match competition, this value is the number of the game played. If
      * the use of a round number is inappropriate, then the field should be a
      * single hyphen character. If the round is unknown, a single question mark
-     * should appear as
-     * the tag value.
+     * should appear as the tag value.
      */
     val round: String
         get() = sevenTagRosterValue(PGNSevenTagRosterTag.Round)
@@ -431,6 +430,9 @@ val PGNGameTags.monthOfYear: Int?
     get() = monthOfYearString.toIntOrNull()
 val PGNGameTags.monthOfYearString: String
     get() = date.substring(5, 7)
+
+val PGNGameTags.roundInt: Int?
+    get() = round.toIntOrNull()
 
 val PGNGameTags.whiteELOs: List<Int?>
     get() = separateDelimitedPlayerInfo(valueOf("WhiteElo")).map { it.toIntOrNull() }

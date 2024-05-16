@@ -47,11 +47,21 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(libs.kotlinx.datetime)
+            api(project(":fs-pgn-serialization"))
+            api(libs.ktor.serialization)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(project(":fs-pgn-testtools"))
+            implementation(libs.okio.fakefilesystem)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.cio)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+
+        jsMain.dependencies {
+            implementation(libs.okio.nodefilesystem)
         }
     }
 }

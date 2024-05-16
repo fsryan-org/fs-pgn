@@ -17,7 +17,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNParseException")
             } catch (e: PGNParseException) {
                 assertEquals("Unexpected end of file while reading game termination", e.message)
@@ -30,7 +30,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("X".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -44,7 +44,7 @@ class PGNGameTerminationDeserializerTest {
     fun shouldParseInProgressAbandonedOrUnknown() {
         Buffer().use { buf ->
             buf.write("*".encodeUtf8())
-            val actual = buf.deserializeGameTermination(0)
+            val actual = buf.deserializePGNGameResult(0)
             assertEquals(PGNGameResultValue.InProgressAbandonedOrUnknown, actual.value.result)
             assertEquals(1, actual.charactersRead)
         }
@@ -54,7 +54,7 @@ class PGNGameTerminationDeserializerTest {
     fun shouldParseWhiteWins() {
         Buffer().use { buf ->
             buf.write("1-0".encodeUtf8())
-            val actual = buf.deserializeGameTermination(0)
+            val actual = buf.deserializePGNGameResult(0)
             assertEquals(PGNGameResultValue.WhiteWins, actual.value.result)
             assertEquals(3, actual.charactersRead)
         }
@@ -64,7 +64,7 @@ class PGNGameTerminationDeserializerTest {
     fun shouldParseBlackWins() {
         Buffer().use { buf ->
             buf.write("0-1".encodeUtf8())
-            val actual = buf.deserializeGameTermination(0)
+            val actual = buf.deserializePGNGameResult(0)
             assertEquals(PGNGameResultValue.BlackWins, actual.value.result)
             assertEquals(3, actual.charactersRead)
         }
@@ -74,7 +74,7 @@ class PGNGameTerminationDeserializerTest {
     fun shouldParseDraw() {
         Buffer().use { buf ->
             buf.write("1/2-1/2".encodeUtf8())
-            val actual = buf.deserializeGameTermination(0)
+            val actual = buf.deserializePGNGameResult(0)
             assertEquals(PGNGameResultValue.Draw, actual.value.result)
             assertEquals(7, actual.charactersRead)
         }
@@ -85,7 +85,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("0X1".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -100,7 +100,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("0-2".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -115,7 +115,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1X0".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -130,7 +130,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1-1".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -145,7 +145,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1/3-1/2".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -160,7 +160,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1/2X1/2".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -175,7 +175,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1/2-2/2".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -190,7 +190,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1/2-1X2".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)
@@ -205,7 +205,7 @@ class PGNGameTerminationDeserializerTest {
         Buffer().use { buf ->
             buf.write("1/2-1/3".encodeUtf8())
             try {
-                buf.deserializeGameTermination(0)
+                buf.deserializePGNGameResult(0)
                 fail("Should have thrown PGNUnexpectedGameTerminationCharException")
             } catch (e: PGNUnexpectedGameTerminationCharException) {
                 assertEquals("Unexpected character found while reading game termination", e.message)

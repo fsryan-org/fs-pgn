@@ -43,7 +43,7 @@ class PGNUnexpectedTagValueDelimiter(position: Int, val char: Char): PGNTagPairE
 
 class PGNDuplicateTagException(position: Int, val key: String): PGNTagPairException(
     position = position,
-    message = "Duplicate tag"
+    message = "Duplicate tag: $key"
 )
 
 open class PGNIntegerException(position: Int, message: String): PGNParseException(position, message)
@@ -57,7 +57,7 @@ open class PGNSANMoveException(position: Int, message: String): PGNParseExceptio
 
 class PGNSANIllegalCharacterException(position: Int, val char: Char): PGNSANMoveException(
     position = position,
-    message = "Illegal character found while reading SAN move"
+    message = "Illegal character found while reading SAN move: $char"
 )
 
 class PGNSANPieceDoesNotPromoteException(position: Int, val piece: PGNGamePiece): PGNSANMoveException(

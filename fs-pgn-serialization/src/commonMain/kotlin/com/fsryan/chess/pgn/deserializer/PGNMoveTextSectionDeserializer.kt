@@ -1,7 +1,6 @@
 package com.fsryan.chess.pgn.deserializer
 
 import com.fsryan.chess.pgn.PGNMoveSectionElement
-import com.fsryan.chess.pgn.PGNParseException
 import okio.BufferedSource
 import okio.use
 
@@ -12,23 +11,30 @@ internal fun BufferedSource.deserializeMoveTextSection(
     var nextPosition = position
     val elements = mutableListOf<PGNMoveSectionElement>()
     while (true) {
+        nextPosition += readWhitespace(nextPosition)
         if (exhausted()) {
             break
         }
 
-        nextPosition += readWhitespace(nextPosition)
-
-        var readNextMove = true
+        var readNextMove = false
         peek().use { peekable ->
-            try {
-                val terminator = peekable.deserializeGameTermination(nextPosition)
-                nextPosition += terminator.charactersRead
-                elements.add(terminator.value)
-                incrementByUTF8CharacterCount(terminator.charactersRead)
-                return PGNDeserializationResult(value = elements, charactersRead = nextPosition - position)
-            } catch (e: PGNParseException) {
-                // do nothing
-                readNextMove = true
+            val peekNextChar = peekable.readUTF8Char()
+            when {
+                peekNextChar == '0' || peekNextChar == '*' -> {
+                    val result = deserializePGNGameResult(nextPosition)
+                    nextPosition += result.charactersRead
+                    elements.add(result.value)
+                }
+                peekNextChar == '1' -> when (val nextNextChar = peekable.readUTF8Char()) {
+                    '-', '/' -> {
+                        val result = deserializePGNGameResult(nextPosition)
+                        nextPosition += result.charactersRead
+                        elements.add(result.value)
+                    }
+                    else -> readNextMove = true
+                }
+                peekNextChar.isDigit() || peekNextChar.canStartMove -> readNextMove = true
+                else -> readNextMove = false
             }
         }
 
