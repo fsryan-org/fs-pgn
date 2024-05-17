@@ -4,14 +4,12 @@ import fsryan.shouldConfigureJs
 import fsryan.shouldConfigureJvm
 
 plugins {
+    id("maven-publish")
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.dokka)
-//    alias(libs.plugins.kover)
+    alias(libs.plugins.kover)
 }
-
-group = rootProject.group
-version = rootProject.version
 
 kotlin {
 
@@ -56,7 +54,6 @@ kotlin {
             implementation(libs.okio.fakefilesystem)
             implementation(libs.ktor.client.mock)
             implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.client.cio)
             implementation(libs.kotlinx.coroutines.test)
         }
 
@@ -64,4 +61,9 @@ kotlin {
             implementation(libs.okio.nodefilesystem)
         }
     }
+}
+
+dependencies {
+    kover(project(":fs-pgn"))
+    kover(project(":fs-pgn-serialization"))
 }

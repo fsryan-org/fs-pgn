@@ -4,6 +4,7 @@ import fsryan.shouldConfigureJs
 import fsryan.shouldConfigureJvm
 
 plugins {
+    id("maven-publish")
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.dokka)
@@ -23,12 +24,7 @@ kotlin {
     if (shouldConfigureJs()) {
         js(IR) {
             moduleName = project.name
-            nodejs {
-                testTask {
-                    useMocha()
-                    testLogging.showStandardStreams = true
-                }
-            }
+            nodejs()
             useCommonJs()
             binaries.library()
             generateTypeScriptDefinitions()

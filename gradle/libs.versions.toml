@@ -22,8 +22,6 @@ okio-nodefilesystem = { module = "com.squareup.okio:okio-nodefilesystem", versio
 
 ktor-serialization = { module = "io.ktor:ktor-serialization", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }

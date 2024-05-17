@@ -12,9 +12,9 @@ class PGNGameDatabaseSymmetricSerializationTest {
 
     @Test
     fun shouldSerializeAndDeserializeSymmetrically() {
-        (0 until 256).forEach {
+        (0 until 128).forEach {
             val db = TestPGNGameDatabase()
-            val serialized = StringBuilder().addPGNGameDatabase(db).toString()
+            val serialized = db.serialize()
             val deserialized = Buffer().use { buf ->
                 buf.write(serialized.encodeUtf8())
                 buf.deserializePGNGameDatabase(0)

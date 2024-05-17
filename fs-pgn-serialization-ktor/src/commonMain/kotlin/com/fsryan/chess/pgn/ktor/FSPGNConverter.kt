@@ -2,7 +2,7 @@ package com.fsryan.chess.pgn.ktor
 
 import com.fsryan.chess.pgn.PGNGameDatabase
 import com.fsryan.chess.pgn.deserializer.deserializePGNGameDatabase
-import com.fsryan.chess.pgn.serializer.addPGNGameDatabase
+import com.fsryan.chess.pgn.serializer.serialize
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.util.reflect.*
@@ -13,7 +13,6 @@ import io.ktor.util.*
 import io.ktor.util.pipeline.*
 import io.ktor.utils.io.core.*
 import okio.Buffer
-import okio.ByteString.Companion.encodeUtf8
 import okio.use
 
 internal class FSPGNSerializationConverter: ContentConverter {
@@ -34,16 +33,14 @@ internal class FSPGNSerializationConverter: ContentConverter {
         }
 
         return value?.let { db ->
-            val serialized = StringBuilder().addPGNGameDatabase(db).toString()
+            val serialized = db.serialize()
             TextContent(serialized, contentType.withCharsetIfNeeded(charset))
         }
     }
 
     override suspend fun deserialize(charset: Charset, typeInfo: TypeInfo, content: ByteReadChannel): Any? {
-        val contentPacket = content.readRemaining()
         Buffer().use { buf ->
-            val contentString = contentPacket.readText(charset)
-            buf.write(contentString.encodeUtf8())
+            buf.write(content.readRemaining().readBytes())
             val result = buf.deserializePGNGameDatabase()
             return result.value
         }

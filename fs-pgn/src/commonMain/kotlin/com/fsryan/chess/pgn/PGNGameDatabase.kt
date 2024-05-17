@@ -32,7 +32,7 @@ private data class PGNGameDatabaseData(internal val _all: List<PGNGame>): PGNGam
         get() = _all.toTypedArray()
 }
 
-private fun sortStandardCollatingSequence(all: List<PGNGame>): List<PGNGame> {
+internal fun sortStandardCollatingSequence(all: List<PGNGame>): List<PGNGame> {
     return all.sortedWith { g1, g2 ->
         // Sort order 1: Date
         val yearDiff = g1.sortingDateYear - g2.sortingDateYear
@@ -66,6 +66,9 @@ private fun sortStandardCollatingSequence(all: List<PGNGame>): List<PGNGame> {
                 r1 - r2
             }
         } ?: g2.tags.roundInt?.let { -1 } ?: 0
+        if (roundComparison != 0) {
+            return@sortedWith roundComparison
+        }
 
         // Sort order 5: White
         val whiteComparison = g1.tags.white.compareTo(g2.tags.white)
@@ -95,7 +98,6 @@ private fun sortStandardCollatingSequence(all: List<PGNGame>): List<PGNGame> {
                     "$moveNumber$san$nag${comments.map { "{$it}" }.joinToString("")}"
                 }
                 is PGNGameResult -> element.result.serialValue
-                else -> ""
             }
         }.joinToString(" ")
         val g2MoveText = g2.elements.map { element ->
@@ -107,7 +109,6 @@ private fun sortStandardCollatingSequence(all: List<PGNGame>): List<PGNGame> {
                     "$moveNumber$san$nag${comments.map { "{$it}" }.joinToString("")}"
                 }
                 is PGNGameResult -> element.result.serialValue
-                else -> ""
             }
         }.joinToString(" ")
         g1MoveText.compareTo(g2MoveText)

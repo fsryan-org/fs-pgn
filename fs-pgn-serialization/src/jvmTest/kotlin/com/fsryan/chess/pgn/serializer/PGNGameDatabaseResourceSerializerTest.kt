@@ -9,11 +9,11 @@ import okio.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PGNGameDatabaseSerializerTest {
+class PGNGameDatabaseResourceSerializerTest {
 
     @Test
     fun shouldDeserializeAndSerializeNakamuraGames() {
-        readResourceFile("Nakamura.pgn".toPath()).use { buf ->
+        readResourceFile("Nakamura.pgn").use { buf ->
             val result = buf.deserializePGNGameDatabase(0)
             val serialized = StringBuilder().addPGNGameDatabase(result.value).toString()
             Buffer().use { writeBuf ->
@@ -22,6 +22,5 @@ class PGNGameDatabaseSerializerTest {
                 assertEquals(result.value, reDeserialized.value)
             }
         }
-
     }
 }

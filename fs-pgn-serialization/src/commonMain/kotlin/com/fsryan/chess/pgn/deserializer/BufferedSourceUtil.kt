@@ -1,6 +1,5 @@
 package com.fsryan.chess.pgn.deserializer
 
-import com.fsryan.chess.pgn.PGNInvalidIntegerStartingCharException
 import com.fsryan.chess.pgn.PGNParseException
 import okio.BufferedSource
 import okio.IOException

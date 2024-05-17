@@ -2,7 +2,7 @@ package com.fsryan.chess.pgn.ktor
 
 import com.fsryan.chess.pgn.PGNGameDatabase
 import com.fsryan.chess.pgn.deserializer.deserializePGNGameDatabase
-import com.fsryan.chess.pgn.serializer.addPGNGameDatabase
+import com.fsryan.chess.pgn.serializer.serialize
 import com.fsryan.chess.pgn.test.TestPGNGameDatabase
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -46,7 +46,7 @@ class ContentNegotiationTest {
         val gameDatabase = TestPGNGameDatabase()
         val mockEngine = MockEngine { request ->
             respond(
-                content = StringBuilder().addPGNGameDatabase(gameDatabase).toString(),
+                content = gameDatabase.serialize(),
                 status = HttpStatusCode.OK,
                 headers = headersOf(HttpHeaders.ContentType, "application/vnd.chess-pgn")
             )

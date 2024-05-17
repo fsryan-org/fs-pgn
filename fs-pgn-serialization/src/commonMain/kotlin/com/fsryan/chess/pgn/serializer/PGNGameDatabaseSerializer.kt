@@ -5,7 +5,9 @@ import com.fsryan.chess.pgn.PGNGameDatabase
 import com.fsryan.chess.pgn.all
 import com.fsryan.chess.pgn.elements
 
-fun StringBuilder.addPGNGameDatabase(database: PGNGameDatabase): StringBuilder {
+fun PGNGameDatabase.serialize(): String = StringBuilder().addPGNGameDatabase(this).toString()
+
+internal fun StringBuilder.addPGNGameDatabase(database: PGNGameDatabase): StringBuilder {
     database.all.forEach { game ->
         addPGNGame(game)
         append("\n")

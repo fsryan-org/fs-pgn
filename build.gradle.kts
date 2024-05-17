@@ -1,5 +1,7 @@
 import fsryan.fsryanMavenRepoPassword
 import fsryan.fsryanMavenUser
+import fsryan.fsryanNPMRepo
+import fsryan.fsryanNPMRepoToken
 import org.jetbrains.dokka.DokkaConfiguration.Visibility
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URI
@@ -9,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.kover) apply false
 }
 
 group = "com.fsryan.chess"
@@ -59,6 +62,10 @@ buildscript {
 }
 
 allprojects {
+
+    group = rootProject.group
+    version = rootProject.version
+
     repositories {
         val props = fsryan.BuildProperties
         if (hasProperty("fsryan.includeMavenLocal")) {
@@ -102,6 +109,65 @@ allprojects {
         dokkaSourceSets.configureEach {
             reportUndocumented.set(true)
             documentedVisibilities.set(listOf(Visibility.PUBLIC, Visibility.INTERNAL))
+        }
+    }
+
+    // TODO: this is complicated enough that it should be a plugin
+    tasks.whenTaskAdded {
+        if (name == "jsNodeProductionLibraryDistribution") {
+            val npmBuild = this
+            println("Adding NPM publishing tasks")
+            tasks {
+                val npmBuildDir = layout.buildDirectory.dir("npm").get().asFile
+
+                val apoktoPrepNpm = register<Copy>("fsPrepNPM") {
+                    dependsOn(npmBuild)
+                    mustRunAfter(npmBuild)
+                    from(npmBuild.outputs.files)
+                    into(npmBuildDir)
+                    description = "Move all files into a directory for the purpose of NPM publishing"
+                    group = "FS NPM"
+                }
+
+                val createNpmrc = create("fsCreateNPMRC") {
+                    dependsOn(apoktoPrepNpm)
+                    description = "Writes the .npmrc file necessary"
+                    group = "FS NPM"
+                    doLast {
+                        npmBuildDir.mkdirs()
+                        val npmrc = File(npmBuildDir, ".npmrc")
+                        val npmRepoWithoutProtocol = fsryanNPMRepo(includeProtocol = false)
+//                        npmrc.writeText(
+//                            """
+//                            @fsryan:registry=${fsryanNPMRepo()}
+//                            ${npmRepoWithoutProtocol}:always-auth=true
+//                            ${npmRepoWithoutProtocol}:email=not.valid@email.com
+//                            ${npmRepoWithoutProtocol}:_authToken=${fsryanNPMRepoToken()}
+//                            """.trimIndent()
+//                        )
+                        npmrc.writeText(
+                            """
+                            registry=${fsryanNPMRepo()}
+                            ${npmRepoWithoutProtocol}:always-auth=true
+                            ${npmRepoWithoutProtocol}:email=not.valid@email.com
+                            ${npmRepoWithoutProtocol}:_authToken=${fsryanNPMRepoToken()}
+                            """.trimIndent()
+                        )
+                    }
+                }
+
+                register("fsPublishNPM") {
+                    dependsOn(createNpmrc)
+                    description = "Publish the NPM package to the FS Ryan NPM registry"
+                    group = "FS NPM"
+                    doLast {
+                        exec {
+                            workingDir = npmBuildDir
+                            commandLine("npm", "publish", "--registry=${fsryanNPMRepo()}", "--userconfig=.npmrc")
+                        }
+                    }
+                }
+            }
         }
     }
 

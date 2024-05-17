@@ -4,14 +4,12 @@ import fsryan.shouldConfigureJs
 import fsryan.shouldConfigureJvm
 
 plugins {
+    id("maven-publish")
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.dokka)
-//    alias(libs.plugins.kover)
+    alias(libs.plugins.kover)
 }
-
-group = rootProject.group
-version = rootProject.version
 
 kotlin {
 
