@@ -1,7 +1,7 @@
 import fsryan.fsryanMavenRepoPassword
 import fsryan.fsryanMavenUser
-import fsryan.fsryanNPMRepo
-import fsryan.fsryanNPMRepoToken
+import fsryan.fsryanNPMRegistryUrl
+import fsryan.fsryanNPMRegistryToken
 import org.jetbrains.dokka.DokkaConfiguration.Visibility
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URI
@@ -112,7 +112,6 @@ allprojects {
         }
     }
 
-    // TODO: this is complicated enough that it should be a plugin
     tasks.whenTaskAdded {
         if (name == "jsNodeProductionLibraryDistribution") {
             val npmBuild = this
@@ -120,7 +119,7 @@ allprojects {
             tasks {
                 val npmBuildDir = layout.buildDirectory.dir("npm").get().asFile
 
-                val apoktoPrepNpm = register<Copy>("fsPrepNPM") {
+                val prepNpm = register<Copy>("fsPrepNPM") {
                     dependsOn(npmBuild)
                     mustRunAfter(npmBuild)
                     from(npmBuild.outputs.files)
@@ -130,27 +129,19 @@ allprojects {
                 }
 
                 val createNpmrc = create("fsCreateNPMRC") {
-                    dependsOn(apoktoPrepNpm)
+                    dependsOn(prepNpm)
                     description = "Writes the .npmrc file necessary"
                     group = "FS NPM"
                     doLast {
                         npmBuildDir.mkdirs()
                         val npmrc = File(npmBuildDir, ".npmrc")
-                        val npmRepoWithoutProtocol = fsryanNPMRepo(includeProtocol = false)
-//                        npmrc.writeText(
-//                            """
-//                            @fsryan:registry=${fsryanNPMRepo()}
-//                            ${npmRepoWithoutProtocol}:always-auth=true
-//                            ${npmRepoWithoutProtocol}:email=not.valid@email.com
-//                            ${npmRepoWithoutProtocol}:_authToken=${fsryanNPMRepoToken()}
-//                            """.trimIndent()
-//                        )
+                        val npmRepoWithoutProtocol = fsryanNPMRegistryUrl(includeProtocol = false)
                         npmrc.writeText(
                             """
-                            registry=${fsryanNPMRepo()}
+                            registry=${fsryanNPMRegistryUrl()}
                             ${npmRepoWithoutProtocol}:always-auth=true
                             ${npmRepoWithoutProtocol}:email=not.valid@email.com
-                            ${npmRepoWithoutProtocol}:_authToken=${fsryanNPMRepoToken()}
+                            ${npmRepoWithoutProtocol}:_authToken=${fsryanNPMRegistryToken()}
                             """.trimIndent()
                         )
                     }
@@ -163,7 +154,7 @@ allprojects {
                     doLast {
                         exec {
                             workingDir = npmBuildDir
-                            commandLine("npm", "publish", "--registry=${fsryanNPMRepo()}", "--userconfig=.npmrc")
+                            commandLine("npm", "publish")
                         }
                     }
                 }

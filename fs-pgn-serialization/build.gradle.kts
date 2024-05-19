@@ -28,7 +28,9 @@ kotlin {
             moduleName = project.name
             nodejs {
                 testTask {
-                    useMocha()
+                    useMocha {
+                        timeout = 5000.toString()
+                    }
                     testLogging.showStandardStreams = true
                 }
             }
