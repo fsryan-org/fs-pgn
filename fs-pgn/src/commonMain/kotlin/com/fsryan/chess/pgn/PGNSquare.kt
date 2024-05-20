@@ -6,6 +6,7 @@ import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.jvm.JvmInline
+import kotlin.math.abs
 
 @JsExport
 interface PGNSquare {
@@ -25,6 +26,37 @@ fun PGNSquare.isLight(): Boolean = numericValue % 2 == 0
  */
 @JsExport
 fun PGNSquare.isDark(): Boolean = !isLight()
+
+fun PGNSquare.isOnSameDiagonal(other: PGNSquare): Boolean = abs(other.file - file) == abs(other.rank - rank)
+
+/**
+ * @return the square at the next diagonal in the direction specified by the
+ * parameters or null if it is off the board
+ */
+fun PGNSquare.nextDiagonal(left: Boolean, up: Boolean): PGNSquare? {
+    val file = if (left) previousFile() else nextFile()
+    return file?.let { if (up) it.nextRank() else it.previousRank() }
+}
+
+/**
+ * @return the square at the next rank or null if it is off the board
+ */
+fun PGNSquare.nextRank(): PGNSquare? = if (rank == 8) null else PGNSquare(numericValue + 8)
+
+/**
+ * @return the square at the previous rank or null if it is off the board
+ */
+fun PGNSquare.previousRank(): PGNSquare? = if (rank == 1) null else PGNSquare(numericValue - 8)
+
+/**
+ * @return the square at the next file or null if it is off the board
+ */
+fun PGNSquare.nextFile(): PGNSquare? = if (file == 'h') null else PGNSquare(numericValue + 1)
+
+/**
+ * @return the square at the previous file or null if it is off the board
+ */
+fun PGNSquare.previousFile(): PGNSquare? = if (file == 'a') null else PGNSquare(numericValue - 1)
 
 val PGNSquare.pgnString: String
     get() = "${file}${rank}"
