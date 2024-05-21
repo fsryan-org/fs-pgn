@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "com.fsryan.chess"
-version = "0.0.3"
+version = "0.0.4"
 
 buildscript {
     val props = fsryan.BuildProperties

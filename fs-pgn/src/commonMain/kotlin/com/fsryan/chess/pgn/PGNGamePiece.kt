@@ -29,9 +29,44 @@ enum class PGNGamePiece(val serialValue: String, val isSerialValueOptional: Bool
     }
 }
 
+/**
+ * A shortcut for creating a [PlayerGamePiece] with the [PGNGamePiece] as the
+ * piece and the player as black
+ * @return a [PlayerGamePiece] with the [PGNGamePiece] as the piece and the
+ * player as black
+ */
+@JsExport
+fun PGNGamePiece.black(): PlayerGamePiece = PlayerGamePiece(isBlack = true, piece = this)
+
+/**
+ * A shortcut for creating a [PlayerGamePiece] with the [PGNGamePiece] as the
+ * piece and the player as white
+ * @return a [PlayerGamePiece] with the [PGNGamePiece] as the piece and the
+ * player as white
+ */
+@JsExport
+fun PGNGamePiece.white(): PlayerGamePiece = PlayerGamePiece(isBlack = false, piece = this)
+
+/**
+ * A shortcut for creating a [PlayerGamePiece] with the [PGNGamePiece] as the piece
+ * and the player as the specified value
+ *
+ * @param isBlack true if the player is black, false if the player is white
+ * @return a [PlayerGamePiece] with the [PGNGamePiece] as the piece and the
+ * player as the specified value
+ */
+@JsExport
+fun PGNGamePiece.ofPlayer(isBlack: Boolean): PlayerGamePiece = PlayerGamePiece(isBlack = isBlack, piece = this)
+
+/**
+ * the character value of the [PGNGamePiece]
+ */
 val PGNGamePiece.charValue: Char
     get() = serialValue[0]
 
+/**
+ * @return the [PGNGamePiece] that corresponds to the given character
+ */
 fun PGNGamePiece.Companion.fromChar(char: Char): PGNGamePiece {
     return when (char) {
         PGNGamePiece.Pawn.charValue -> PGNGamePiece.Pawn
