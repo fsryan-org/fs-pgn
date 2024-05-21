@@ -66,9 +66,12 @@ fun ForsythEdwardsNotation.replacePieceAt(square: PGNSquare, piece: PlayerGamePi
         buf.append(emptySpaceCounter)
     }
 
-    val pieceLocations = pieceLocationsField.split('/').toMutableList()
-    pieceLocations[8 - square.rank] = buf.toString()
-    return ForsythEdwardsNotation(pieceLocations.joinToString("/"))
+    val pieceLocationsList = pieceLocationsField.split('/').toMutableList()
+    pieceLocationsList[8 - square.rank] = buf.toString()
+    val pieceLocations = pieceLocationsList.joinToString("/")
+    val newFENList = serialValue.split(' ').toMutableList()
+    newFENList[0] = pieceLocations
+    return ForsythEdwardsNotation(newFENList.joinToString(" "))
 }
 
 internal val ForsythEdwardsNotation.pieceLocationsField: String
