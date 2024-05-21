@@ -6,6 +6,7 @@ import com.fsryan.chess.pgn.FENPlayerGamePiece
 import com.fsryan.chess.pgn.PGNCastle
 import com.fsryan.chess.pgn.PGNSquare
 import com.fsryan.chess.pgn.PlayerGamePiece
+import com.fsryan.chess.pgn.charValue
 import com.fsryan.chess.pgn.file
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
@@ -13,10 +14,11 @@ import kotlin.jvm.JvmInline
 
 @JsExport
 interface ForsythEdwardsNotation {
-    val enPassantTargetSquare: PGNSquare?
-    val halfMoveClock: Int
-    val fullMoveNumber: Int
     val activePlayerCharacterCode: Int
+    val enPassantTargetSquare: PGNSquare?
+    val fullMoveNumber: Int
+    val halfMoveClock: Int
+    val serialValue: String
     fun blackHasCastlingRights(castle: PGNCastle): Boolean
     fun pieceAt(square: PGNSquare): PlayerGamePiece?
     fun whiteHasCastlingRights(castle: PGNCastle): Boolean
@@ -35,12 +37,52 @@ fun ForsythEdwardsNotation.blackIsActive(): Boolean = activePlayerCharacterCode 
 @JsExport
 fun ForsythEdwardsNotation.whiteIsActive(): Boolean = activePlayerCharacterCode == 'w'.code
 
+@JsExport
+fun ForsythEdwardsNotation.replacePieceAt(square: PGNSquare, piece: PlayerGamePiece? = null): ForsythEdwardsNotation {
+    pieceAt(square) ?: piece ?: return this
+
+    var emptySpaceCounter = 0
+    val buf = StringBuilder()
+    sequenceOf('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h').forEach { file ->
+        if (file == square.file) {
+            piece?.let {
+                if (emptySpaceCounter > 0) {
+                    buf.append(emptySpaceCounter)
+                    emptySpaceCounter = 0
+                }
+                buf.append(if (it.isBlack) it.piece.charValue.lowercaseChar() else it.piece.charValue)
+            } ?: emptySpaceCounter++
+        } else {
+            pieceAt(PGNSquare(file = file, rank = square.rank))?.let { pgp ->
+                if (emptySpaceCounter > 0) {
+                    buf.append(emptySpaceCounter)
+                    emptySpaceCounter = 0
+                }
+                buf.append(if (pgp.isBlack) pgp.piece.charValue.lowercaseChar() else pgp.piece.charValue)
+            } ?: emptySpaceCounter++
+        }
+    }
+    if (emptySpaceCounter > 0) {
+        buf.append(emptySpaceCounter)
+    }
+
+    val pieceLocations = pieceLocationsField.split('/').toMutableList()
+    pieceLocations[8 - square.rank] = buf.toString()
+    return ForsythEdwardsNotation(pieceLocations.joinToString("/"))
+}
+
+internal val ForsythEdwardsNotation.pieceLocationsField: String
+    get() = when(this) {
+        is ForsythEdwardsNotationValue -> _pieceLocationsField
+        else -> ForsythEdwardsNotationValue(serialValue)._pieceLocationsField
+    }
+
 /**
  * Wraps a String that represents a Forsyth-Edwards Notation representation of
  * a chess game state
  */
 @JvmInline
-private value class ForsythEdwardsNotationValue(val serialValue: String): ForsythEdwardsNotation {
+private value class ForsythEdwardsNotationValue(override val serialValue: String): ForsythEdwardsNotation {
 
     private val activePlayerField: String
         get() = fieldAt(1)
@@ -52,7 +94,7 @@ private value class ForsythEdwardsNotationValue(val serialValue: String): Forsyt
         get() = fieldAt(4)
     private val fullMoveNumberField: String
         get() = fieldAt(5)
-    private val pieceLocationsField: String
+    internal val _pieceLocationsField: String
         get() = fieldAt(0)
 
     override val enPassantTargetSquare: PGNSquare?
@@ -83,9 +125,6 @@ private value class ForsythEdwardsNotationValue(val serialValue: String): Forsyt
     // there are faster ways to implement this than splitting the string
     private fun fieldAt(index: Int): String = serialValue.split(' ')[index]
 
-    // there are faster ways to implement this than splitting the string
-    private fun pieceLocationsOnRank(rank: Int): String = pieceLocationsField.split('/')[8 - rank]
-
     private fun pieceOnFileOfRank(piecesOnRank: String, file: Char): PlayerGamePiece? {
         var currentFile = 'a'
         var currentIndex = 0
@@ -104,4 +143,8 @@ private value class ForsythEdwardsNotationValue(val serialValue: String): Forsyt
         }
         return null
     }
+}
+
+internal fun ForsythEdwardsNotation.pieceLocationsOnRank(rank: Int): String {
+    return pieceLocationsField.split('/')[8 - rank]
 }
