@@ -219,8 +219,8 @@ private class MapBasedFEN(
         val newEnPassantTargetSquare = when (enPassantTargetSquare) {
             null -> when (moved.piece) {
                 PGNGamePiece.Pawn -> when (blackIsActive) {
-                    true -> if (from.rank == 7 && to.rank == 5) checkNotNull(from.previousRank()) else null
-                    false -> if (from.rank == 2 && to.rank == 4) checkNotNull(from.previousRank()) else null
+                    true -> if (from.rank == 7 && to.rank == 5) checkNotNull(to.previousRank()) else null
+                    false -> if (from.rank == 2 && to.rank == 4) checkNotNull(to.previousRank()) else null
                 }
                 else -> null
             }

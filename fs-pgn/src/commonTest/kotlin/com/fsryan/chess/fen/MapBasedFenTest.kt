@@ -45,4 +45,10 @@ class MapBasedFenTest {
         assertEquals("e8".sq(), fen.blackKingSquare())
         assertEquals("e1".sq(), fen.whiteKingSquare())
     }
+
+    @Test
+    fun shouldCorrectlyDetermineSerialValue() {
+        val fen = ForsythEdwardsNotation(FEN_STANDARD_STARTING_POSITION).ensureMapBased()
+        assertEquals(FEN_STANDARD_STARTING_POSITION, fen.serialValue)
+    }
 }
