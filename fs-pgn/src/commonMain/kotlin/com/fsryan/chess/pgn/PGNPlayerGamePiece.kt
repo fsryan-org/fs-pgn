@@ -33,6 +33,12 @@ fun FENPlayerGamePiece(fenCharCode: Int): PlayerGamePiece {
     }
 }
 
+@JsExport
+fun PlayerGamePiece.unicodeCode(): Int = piece.unicodeSymbolCode(isBlack)
+
+val PlayerGamePiece.unicodeChar: Char
+    get() = piece.unicodeSymbolChar(isBlack)
+
 @JvmInline
 private value class BlackPlayerGamePieceValue(override val piece: PGNGamePiece): PlayerGamePiece {
     override val isBlack: Boolean

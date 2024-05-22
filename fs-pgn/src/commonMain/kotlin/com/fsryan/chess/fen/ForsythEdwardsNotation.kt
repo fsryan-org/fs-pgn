@@ -60,12 +60,6 @@ fun ForsythEdwardsNotation(serialValue: String): ForsythEdwardsNotation {
 }
 
 @JsExport
-fun ForsythEdwardsNotation.positionField(): String {
-    val delimiter = serialValue.indexOf(' ')
-    return serialValue.substring(0, delimiter)
-}
-
-@JsExport
 fun ForsythEdwardsNotation.blackKingSquare(): PGNSquare = kingSquare(black = true)
 @JsExport
 fun ForsythEdwardsNotation.whiteKingSquare(): PGNSquare = kingSquare(black = false)

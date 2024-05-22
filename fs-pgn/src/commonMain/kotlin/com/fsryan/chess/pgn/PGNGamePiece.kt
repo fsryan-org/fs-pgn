@@ -58,6 +58,19 @@ fun PGNGamePiece.white(): PlayerGamePiece = PlayerGamePiece(isBlack = false, pie
 @JsExport
 fun PGNGamePiece.ofPlayer(isBlack: Boolean): PlayerGamePiece = PlayerGamePiece(isBlack = isBlack, piece = this)
 
+@JsExport
+fun PGNGamePiece.blackUnicodeSymbolCode(): Int = unicodeSymbolCode(isBlack = true)
+@JsExport
+fun PGNGamePiece.whiteUnicodeSymbolCode(): Int = unicodeSymbolCode(isBlack = false)
+@JsExport
+fun PGNGamePiece.unicodeSymbolCode(isBlack: Boolean): Int = unicodeSymbolCodeOffset(if (isBlack) 6 else 0)
+
+val PGNGamePiece.blackUnicodeSymbolChar: Char
+    get() = blackUnicodeSymbolCode().toChar()
+val PGNGamePiece.whiteUnicodeSymbolChar: Char
+    get() = whiteUnicodeSymbolCode().toChar()
+fun PGNGamePiece.unicodeSymbolChar(isBlack: Boolean): Char = unicodeSymbolCode(isBlack).toChar()
+
 /**
  * the character value of the [PGNGamePiece]
  */
@@ -77,4 +90,17 @@ fun PGNGamePiece.Companion.fromChar(char: Char): PGNGamePiece {
         PGNGamePiece.King.charValue -> PGNGamePiece.King
         else -> throw IllegalArgumentException("No PGNGamePiece found for char: $char")
     }
+}
+
+private fun PGNGamePiece.unicodeSymbolCodeOffset(offset: Int): Int {
+    val whiteKing = 0x2654
+    val whiteOffset = when (this) {
+        PGNGamePiece.King -> 0
+        PGNGamePiece.Queen -> 1
+        PGNGamePiece.Rook -> 2
+        PGNGamePiece.Bishop -> 3
+        PGNGamePiece.Knight -> 4
+        PGNGamePiece.Pawn -> 5
+    }
+    return whiteKing + whiteOffset + offset
 }
