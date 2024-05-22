@@ -37,6 +37,12 @@ interface ForsythEdwardsNotation {
      */
     val halfMoveClock: Int
     val serialValue: String
+
+    /**
+     * The FEN position field of the Forsyth-Edwards Notation
+     */
+    val positionsField: String
+
     fun blackHasCastlingRights(castle: PGNCastle): Boolean
     fun pieceAt(square: PGNSquare): PlayerGamePiece?
     fun whiteHasCastlingRights(castle: PGNCastle): Boolean
@@ -51,6 +57,12 @@ interface ForsythEdwardsNotation {
 fun ForsythEdwardsNotation(serialValue: String): ForsythEdwardsNotation {
     // TODO: ensure string fits format
     return ForsythEdwardsNotationValue(serialValue)
+}
+
+@JsExport
+fun ForsythEdwardsNotation.positionField(): String {
+    val delimiter = serialValue.indexOf(' ')
+    return serialValue.substring(0, delimiter)
 }
 
 @JsExport
@@ -77,7 +89,8 @@ fun ForsythEdwardsNotation.blackIsActive(): Boolean = activePlayerCharacterCode 
 @JsExport
 fun ForsythEdwardsNotation.whiteIsActive(): Boolean = activePlayerCharacterCode == 'w'.code
 
-internal fun ForsythEdwardsNotation.ensureMapBased(): ForsythEdwardsNotation {
+@JsExport
+fun ForsythEdwardsNotation.ensureMapBased(): ForsythEdwardsNotation {
     if (this is MapBasedFEN) {
         return this
     }
@@ -134,33 +147,13 @@ private class MapBasedFEN(
 ): ForsythEdwardsNotation {
     override val activePlayerCharacterCode: Int
         get() = if (blackIsActive) 'b'.code else 'w'.code
+
+    override val positionsField: String
+        get() = StringBuilder().appendPositionsField().toString()
+
     override val serialValue: String
         get() = buildString {
-            var emptySpaceCounter = 0
-            var currentRank = 8
-            (8 downTo 1).flatMap { rank ->
-                ('a' .. 'h').map { file -> PGNSquare(file = file, rank = rank) }
-            }.forEach { square ->
-                if (currentRank != square.rank) {
-                    if (emptySpaceCounter > 0) {
-                        append(emptySpaceCounter)
-                        emptySpaceCounter = 0
-                    }
-                    append('/')
-                    currentRank--
-                }
-
-                pieceAt(square)?.let {
-                    if (emptySpaceCounter > 0) {
-                        append(emptySpaceCounter)
-                        emptySpaceCounter = 0
-                    }
-                    append(if (it.isBlack) it.piece.charValue.lowercaseChar() else it.piece.charValue)
-                } ?: emptySpaceCounter++
-            }
-            if (emptySpaceCounter > 0) {
-                append(emptySpaceCounter)
-            }
+            appendPositionsField()
 
             append(' ')
             append(if (whiteIsActive()) 'w' else 'b')
@@ -289,6 +282,35 @@ private class MapBasedFEN(
         )
     }
 
+    private fun StringBuilder.appendPositionsField(): StringBuilder {
+        var emptySpaceCounter = 0
+        var currentRank = 8
+        (8 downTo 1).flatMap { rank ->
+            ('a' .. 'h').map { file -> PGNSquare(file = file, rank = rank) }
+        }.forEach { square ->
+            if (currentRank != square.rank) {
+                if (emptySpaceCounter > 0) {
+                    append(emptySpaceCounter)
+                    emptySpaceCounter = 0
+                }
+                append('/')
+                currentRank--
+            }
+
+            pieceAt(square)?.let {
+                if (emptySpaceCounter > 0) {
+                    append(emptySpaceCounter)
+                    emptySpaceCounter = 0
+                }
+                append(if (it.isBlack) it.piece.charValue.lowercaseChar() else it.piece.charValue)
+            } ?: emptySpaceCounter++
+        }
+        if (emptySpaceCounter > 0) {
+            append(emptySpaceCounter)
+        }
+        return this
+    }
+
 }
 
 /**
@@ -308,7 +330,7 @@ private value class ForsythEdwardsNotationValue(override val serialValue: String
         get() = fieldAt(4)
     private val fullMoveNumberField: String
         get() = fieldAt(5)
-    private val pieceLocationsField: String
+    override val positionsField: String
         get() = fieldAt(0)
 
     override val enPassantTargetSquare: PGNSquare?
@@ -348,7 +370,7 @@ private value class ForsythEdwardsNotationValue(override val serialValue: String
     private fun fieldAt(index: Int): String = serialValue.split(' ')[index]
 
     private fun pieceLocationsOnRank(rank: Int): String {
-        return pieceLocationsField.split('/')[8 - rank]
+        return positionsField.split('/')[8 - rank]
     }
 
     private fun pieceOnFileOfRank(piecesOnRank: String, file: Char): PlayerGamePiece? {
