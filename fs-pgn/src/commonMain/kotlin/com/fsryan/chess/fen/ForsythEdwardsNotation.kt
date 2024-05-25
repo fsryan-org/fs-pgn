@@ -46,10 +46,6 @@ interface ForsythEdwardsNotation {
     fun blackHasCastlingRights(castle: PGNCastle): Boolean
     fun pieceAt(square: PGNSquare): PlayerGamePiece?
     fun whiteHasCastlingRights(castle: PGNCastle): Boolean
-
-    fun movePiece(from: PGNSquare, to: PGNSquare, promotionPiece: PGNGamePiece? = null): ForsythEdwardsNotation
-
-    fun performCastle(castle: PGNCastle): ForsythEdwardsNotation
 }
 
 @JsExport
@@ -59,15 +55,67 @@ fun ForsythEdwardsNotation(serialValue: String): ForsythEdwardsNotation {
     return ForsythEdwardsNotationValue(serialValue)
 }
 
+
+@JsExport
+@JsName("createForsythEdwardsNotationFrom")
+fun ForsythEdwardsNotation(
+    positionString: String = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+    blackIsActive: Boolean = false,
+    blackCanCastleKingSide: Boolean = true,
+    blackCanCastleQueenSide: Boolean = true,
+    enPassantSquare: PGNSquare? = null,
+    halfMoveClock: Int = 0,
+    fullMoveNumber: Int = 1,
+    whiteCanCastleKingSide: Boolean = true,
+    whiteCanCastleQueenSide: Boolean = true
+): ForsythEdwardsNotation {
+    return ForsythEdwardsNotation(serialValue = buildString {
+        append(positionString)
+        append(' ')
+
+        append(if (blackIsActive) 'b' else 'w')
+        append(' ')
+
+        var castlingRightsAdded = false
+        if (whiteCanCastleKingSide) {
+            append('K')
+            castlingRightsAdded = true
+        }
+        if (whiteCanCastleQueenSide) {
+            append('Q')
+            castlingRightsAdded = true
+        }
+        if (blackCanCastleKingSide) {
+            append('k')
+            castlingRightsAdded = true
+        }
+        if (blackCanCastleQueenSide) {
+            append('q')
+            castlingRightsAdded = true
+        }
+        if (!castlingRightsAdded) {
+            append('-')
+        }
+        append(' ')
+
+        append(enPassantSquare?.pgnString ?: "-")
+        append(' ')
+
+        append(halfMoveClock)
+        append(' ')
+
+        append(fullMoveNumber)
+    })
+}
+
 @JsExport
 fun ForsythEdwardsNotation.blackKingSquare(): PGNSquare = kingSquare(black = true)
 @JsExport
 fun ForsythEdwardsNotation.whiteKingSquare(): PGNSquare = kingSquare(black = false)
 
 @JsExport
-fun ForsythEdwardsNotation.kingSquare(black: Boolean): PGNSquare = when (this) {
-    is MapBasedFEN -> if (black) blackKingSquare else whiteKingSquare
-    else -> PGNGamePiece.King.ofPlayer(black).let { king ->
+fun ForsythEdwardsNotation.kingSquare(black: Boolean): PGNSquare {
+    return PGNGamePiece.King.ofPlayer(black).let { king ->
         (if (whiteIsActive()) 0..63 else 63 downTo 0)
             .map(::PGNSquare)
             .firstOrNull { square -> pieceAt(square) == king }
@@ -82,230 +130,6 @@ const val FEN_STANDARD_STARTING_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R
 fun ForsythEdwardsNotation.blackIsActive(): Boolean = activePlayerCharacterCode == 'b'.code
 @JsExport
 fun ForsythEdwardsNotation.whiteIsActive(): Boolean = activePlayerCharacterCode == 'w'.code
-
-@JsExport
-fun ForsythEdwardsNotation.ensureMapBased(): ForsythEdwardsNotation {
-    if (this is MapBasedFEN) {
-        return this
-    }
-
-    var blackKingSquare: PGNSquare? = null
-    var whiteKingSquare: PGNSquare? = null
-    val pieces = mutableMapOf<Int, PlayerGamePiece>().apply {
-        (0..63).map(::PGNSquare).forEach { square ->
-            pieceAt(square)?.let {
-                if (it.piece == PGNGamePiece.King) {
-                    if (it.isBlack) {
-                        if (blackKingSquare != null) {
-                            throw IllegalStateException("Multiple black kings found")
-                        }
-                        blackKingSquare = square
-                    } else {
-                        if (whiteKingSquare != null) {
-                            throw IllegalStateException("Multiple white kings found")
-                        }
-                        whiteKingSquare = square
-                    }
-                }
-                put(square.numericValue, it)
-            }
-        }
-    }
-    return MapBasedFEN(
-        blackIsActive = blackIsActive(),
-        blackCastlingRights = PGNCastle.entries.filter(::blackHasCastlingRights).toSet(),
-        blackKingSquare = checkNotNull(blackKingSquare) { "No black king found" },
-        enPassantTargetSquare = enPassantTargetSquare,
-        fullMoveNumber = fullMoveNumber,
-        halfMoveClock = halfMoveClock,
-        pieces = pieces.toMap(),
-        whiteCastlingRights = PGNCastle.entries.filter(::whiteHasCastlingRights).toSet(),
-        whiteKingSquare = checkNotNull(whiteKingSquare) { "No white king found" }
-    )
-}
-
-
-// TODO: this prevents variants like Chess960. You'll need to not make this
-//  class understand the starting squares of the rooks and king in order to
-//  support Chess960
-private class MapBasedFEN(
-    private val blackIsActive: Boolean,
-    private val blackCastlingRights: Set<PGNCastle>,
-    internal val blackKingSquare: PGNSquare,
-    override val enPassantTargetSquare: PGNSquare?,
-    override val fullMoveNumber: Int,
-    override val halfMoveClock: Int,
-    private val pieces: Map<Int, PlayerGamePiece>,
-    private val whiteCastlingRights: Set<PGNCastle>,
-    internal val whiteKingSquare: PGNSquare
-): ForsythEdwardsNotation {
-    override val activePlayerCharacterCode: Int
-        get() = if (blackIsActive) 'b'.code else 'w'.code
-
-    override val positionsField: String
-        get() = StringBuilder().appendPositionsField().toString()
-
-    override val serialValue: String
-        get() = buildString {
-            appendPositionsField()
-
-            append(' ')
-            append(if (whiteIsActive()) 'w' else 'b')
-
-            append(' ')
-            var appendedCastlingRights = false
-            if (whiteHasCastlingRights(PGNCastle.KingSide)) {
-                append('K')
-                appendedCastlingRights = true
-            }
-            if (whiteHasCastlingRights(PGNCastle.QueenSide)) {
-                append('Q')
-                appendedCastlingRights = true
-            }
-            if (blackHasCastlingRights(PGNCastle.KingSide)) {
-                append('k')
-                appendedCastlingRights = true
-            }
-            if (blackHasCastlingRights(PGNCastle.QueenSide)) {
-                append('q')
-                appendedCastlingRights = true
-            }
-            if (!appendedCastlingRights) {
-                append('-')
-            }
-
-            append(' ')
-            enPassantTargetSquare?.let { append(it.pgnString) } ?: append('-')
-
-            append(' ')
-            append(halfMoveClock)
-
-            append(' ')
-            append(fullMoveNumber)
-        }
-
-    override fun blackHasCastlingRights(castle: PGNCastle): Boolean = blackCastlingRights.contains(castle)
-
-    override fun pieceAt(square: PGNSquare): PlayerGamePiece? = pieces[square.numericValue]
-
-    override fun whiteHasCastlingRights(castle: PGNCastle): Boolean = whiteCastlingRights.contains(castle)
-    override fun movePiece(from: PGNSquare, to: PGNSquare, promotionPiece: PGNGamePiece?): ForsythEdwardsNotation {
-        val newMap = pieces.toMutableMap()
-        val moved = newMap.remove(from.numericValue) ?: throw IllegalArgumentException("No piece at $from")
-        newMap[to.numericValue] = promotionPiece?.ofPlayer(isBlack = blackIsActive) ?: moved
-
-        val newBlackCastlingRights = when (blackIsActive) {
-            true -> when (from) {
-                "e8".sq() -> emptySet()
-                "a8".sq() -> if (blackHasCastlingRights(PGNCastle.QueenSide)) blackCastlingRights - PGNCastle.QueenSide else blackCastlingRights
-                "h8".sq() -> if (blackHasCastlingRights(PGNCastle.KingSide)) blackCastlingRights - PGNCastle.KingSide else blackCastlingRights
-                else -> blackCastlingRights
-            }
-            false -> blackCastlingRights
-        }
-        val newEnPassantTargetSquare = when (enPassantTargetSquare) {
-            null -> when (moved.piece) {
-                PGNGamePiece.Pawn -> when (blackIsActive) {
-                    true -> if (from.rank == 7 && to.rank == 5) checkNotNull(to.previousRank()) else null
-                    false -> if (from.rank == 2 && to.rank == 4) checkNotNull(to.previousRank()) else null
-                }
-                else -> null
-            }
-            else -> null
-        }
-        val newWhiteCastlingRights = when (blackIsActive) {
-            true -> whiteCastlingRights
-            false -> when (from) {
-                "e1".sq() -> emptySet()
-                "a1".sq() -> if (whiteHasCastlingRights(PGNCastle.QueenSide)) whiteCastlingRights - PGNCastle.QueenSide else whiteCastlingRights
-                "h1".sq() -> if (whiteHasCastlingRights(PGNCastle.KingSide)) whiteCastlingRights - PGNCastle.KingSide else whiteCastlingRights
-                else -> whiteCastlingRights
-            }
-        }
-        return MapBasedFEN(
-            blackIsActive = !blackIsActive,
-            blackCastlingRights = newBlackCastlingRights,
-            blackKingSquare = when (blackIsActive) {
-                true -> if (moved.piece == PGNGamePiece.King) to else blackKingSquare
-                false -> blackKingSquare
-            },
-            enPassantTargetSquare = newEnPassantTargetSquare,
-            fullMoveNumber = fullMoveNumber + if (blackIsActive) 1 else 0,
-            halfMoveClock = when {
-                moved.piece == PGNGamePiece.Pawn || pieceAt(to) != null -> 0    // <-- pawn move or capture
-                else -> halfMoveClock + 1
-            },
-            pieces = newMap.toMap(),
-            whiteCastlingRights = newWhiteCastlingRights,
-            whiteKingSquare = when (blackIsActive) {
-                true -> whiteKingSquare
-                false -> if (moved.piece == PGNGamePiece.King) to else whiteKingSquare
-            }
-        )
-    }
-
-    override fun performCastle(castle: PGNCastle): ForsythEdwardsNotation {
-        val rookStartSquare = when (blackIsActive) {
-            true -> when (castle) {
-                PGNCastle.KingSide -> "h8"
-                PGNCastle.QueenSide -> "a8"
-            }
-            false -> when (castle) {
-                PGNCastle.KingSide -> "h1"
-                PGNCastle.QueenSide -> "a1"
-            }
-        }.sq()
-        val kingStartSquare = PGNSquare(file = 'e', rank = if (blackIsActive) 8 else 1)
-
-        val newMap = pieces.toMutableMap()
-        val rook = newMap.remove(rookStartSquare.numericValue) ?: throw IllegalArgumentException("No piece at $rookStartSquare")
-        val king = newMap.remove(kingStartSquare.numericValue) ?: throw IllegalArgumentException("No piece at $kingStartSquare")
-        newMap[castle.kingDestinationSquare(blackIsActive).numericValue] = king
-        newMap[castle.rookDestinationSquare(blackIsActive).numericValue] = rook
-
-        return MapBasedFEN(
-            blackIsActive = !blackIsActive,
-            blackCastlingRights = if (blackIsActive) emptySet() else blackCastlingRights,
-            blackKingSquare = if (blackIsActive) castle.kingDestinationSquare(true) else blackKingSquare,
-            enPassantTargetSquare = null,
-            fullMoveNumber = fullMoveNumber + if (blackIsActive) 1 else 0,
-            halfMoveClock = halfMoveClock + 1,
-            pieces = newMap.toMap(),
-            whiteCastlingRights = if (blackIsActive) whiteCastlingRights else emptySet(),
-            whiteKingSquare = if (blackIsActive) whiteKingSquare else castle.kingDestinationSquare(false)
-        )
-    }
-
-    private fun StringBuilder.appendPositionsField(): StringBuilder {
-        var emptySpaceCounter = 0
-        var currentRank = 8
-        (8 downTo 1).flatMap { rank ->
-            ('a' .. 'h').map { file -> PGNSquare(file = file, rank = rank) }
-        }.forEach { square ->
-            if (currentRank != square.rank) {
-                if (emptySpaceCounter > 0) {
-                    append(emptySpaceCounter)
-                    emptySpaceCounter = 0
-                }
-                append('/')
-                currentRank--
-            }
-
-            pieceAt(square)?.let {
-                if (emptySpaceCounter > 0) {
-                    append(emptySpaceCounter)
-                    emptySpaceCounter = 0
-                }
-                append(if (it.isBlack) it.piece.charValue.lowercaseChar() else it.piece.charValue)
-            } ?: emptySpaceCounter++
-        }
-        if (emptySpaceCounter > 0) {
-            append(emptySpaceCounter)
-        }
-        return this
-    }
-
-}
 
 /**
  * Wraps a String that represents a Forsyth-Edwards Notation representation of
@@ -348,14 +172,6 @@ private value class ForsythEdwardsNotationValue(override val serialValue: String
 
     override fun whiteHasCastlingRights(castle: PGNCastle): Boolean {
         return castlingRightsField.contains(if (castle == PGNCastle.KingSide) 'K' else 'Q')
-    }
-
-    override fun movePiece(from: PGNSquare, to: PGNSquare, promotionPiece: PGNGamePiece?): ForsythEdwardsNotation {
-        return ensureMapBased().movePiece(from, to, promotionPiece)
-    }
-
-    override fun performCastle(castle: PGNCastle): ForsythEdwardsNotation {
-        return ensureMapBased().performCastle(castle)
     }
 
     override fun toString(): String = serialValue

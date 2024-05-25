@@ -1,13 +1,10 @@
 package com.fsryan.chess.fen
 
-import com.fsryan.chess.fen.FEN_STANDARD_STARTING_POSITION
-import com.fsryan.chess.fen.ForsythEdwardsNotation
-import com.fsryan.chess.fen.blackIsActive
-import com.fsryan.chess.fen.whiteIsActive
 import com.fsryan.chess.pgn.PGNCastle
 import com.fsryan.chess.pgn.PGNGamePiece
 import com.fsryan.chess.pgn.PGNSquare
 import com.fsryan.chess.pgn.PlayerGamePiece
+import com.fsryan.chess.pgn.sq
 import com.fsryan.chess.pgn.test.TestForsythEdwardsNotation
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,6 +13,55 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ForsythEdwardsParseTest {
+
+    @Test
+    fun shouldCorrectlyCreateStandardForsythEdwardsNotationFromArguments() {
+        val actual = ForsythEdwardsNotation()
+        val expected = ForsythEdwardsNotation(FEN_STANDARD_STARTING_POSITION)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun shouldCorrectlyCreateForsythEdwardsNotationFromArgumentsWithBlackToMove() {
+        val actual = ForsythEdwardsNotation(
+            blackIsActive = true
+        )
+        val expected = ForsythEdwardsNotation("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun shouldCorrectlyCreateForsythEdwardsNotationFromArgumentsWithoutCastlingRights() {
+        val actual = ForsythEdwardsNotation(
+            blackCanCastleKingSide = false,
+            blackCanCastleQueenSide = false,
+            whiteCanCastleKingSide = false,
+            whiteCanCastleQueenSide = false
+        )
+        val expected = ForsythEdwardsNotation("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1")
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun shouldCorrectlyCreateForsythEdwardsNotationFromArgumentsWithEnPassantSquare() {
+        val actual = ForsythEdwardsNotation(enPassantSquare = "e6".sq())
+        val expected = ForsythEdwardsNotation("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e6 0 1")
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun shouldCorrectlyCreateForsythEdwardsNotationFromArgumentsWithNonzeroHalfMoveClock() {
+        val actual = ForsythEdwardsNotation(halfMoveClock = 3)
+        val expected = ForsythEdwardsNotation("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3 1")
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun shouldCorrectlyCreateForsythEdwardsNotationFromArgumentsWithNonOneFullMoveNumber() {
+        val actual = ForsythEdwardsNotation(fullMoveNumber = 42)
+        val expected = ForsythEdwardsNotation("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 42")
+        assertEquals(expected, actual)
+    }
 
     @Test
     fun shouldCorrectlyParseStandardFEN() {
