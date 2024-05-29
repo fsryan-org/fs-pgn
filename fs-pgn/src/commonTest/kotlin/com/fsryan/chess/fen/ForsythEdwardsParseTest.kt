@@ -378,10 +378,4 @@ class ForsythEdwardsParseTest {
         assertFalse(fen.whiteHasCastlingRights(PGNCastle.KingSide))
         assertFalse(fen.whiteHasCastlingRights(PGNCastle.QueenSide))
     }
-
-    @Test
-    fun something() {
-        val fen = TestForsythEdwardsNotation()
-        println(fen)
-    }
 }

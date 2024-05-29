@@ -30,7 +30,10 @@ fun String.sq(): PGNSquare = PGNSquare(this)
  * @return true if the square is light, false otherwise
  */
 @JsExport
-fun PGNSquare.isLight(): Boolean = numericValue % 2 == 0
+fun PGNSquare.isLight(): Boolean = when ((numericValue / 8) % 2 == 0) {
+    true -> numericValue % 2 == 0   // <-- ranks 1, 3, 5, 7 start on dark squares
+    false -> numericValue % 2 == 1  // <-- ranks 2, 4, 6, 8 start on light squares
+}
 
 /**
  * @return true if the square is dark, false otherwise
@@ -87,7 +90,7 @@ fun PGNSquare(squareString: String): PGNSquare {
     if (squareString.length != 2) {
         throw IllegalArgumentException("squareString must be exactly 2 characters long")
     }
-    return PGNSquare(squareString[0], squareString[1].toString().toInt())
+    return PGNSquare(file = squareString[0], rank = squareString[1].digitToInt())
 }
 
 val PGNSquare.file: Char
@@ -121,7 +124,7 @@ fun PGNSquare(fileASCII: Int, rank: Int): PGNSquare {
     if (fileASCII < 'a'.code || fileASCII > 'h'.code) {
         throw IllegalArgumentException("fileASCII must be between 'a' and 'h' (case sensitive)")
     }
-    return PGNSquare(fileASCII.toChar(), rank)
+    return PGNSquare(file = fileASCII.toChar(), rank = rank)
 }
 
 /**
@@ -133,26 +136,25 @@ fun PGNSquare(value: Int): PGNSquare {
     if (value < 0 || value > 63) {
         throw IllegalArgumentException("value must be between 0 and 63")
     }
-    return PGNSquareValue(value)
+    return PGNSquareUnsafe(value)
 }
+
+/**
+ * This is unsafe because it assumes the caller has already checked for a valid
+ * range on the integer [0, 64)
+ *
+ * @return the square that is represented by the given numeric value
+ */
+@JsExport
+@JsName("createPGNSquareUnsafe")
+fun PGNSquareUnsafe(value: Int): PGNSquare = PGNSquareValue(value)
 
 @JvmInline
 private value class PGNSquareValue(override val numericValue: Int): PGNSquare {
     override val fileASCII: Int
-        get() = when (numericValue % 8) {
-            0 -> 'a'.code
-            1 -> 'b'.code
-            2 -> 'c'.code
-            3 -> 'd'.code
-            4 -> 'e'.code
-            5 -> 'f'.code
-            6 -> 'g'.code
-            7 -> 'h'.code
-            else -> throw IllegalStateException("numericValue must be positive or 0")
-        }
+        get() = 'a'.code + (numericValue % 8)
     override val rank: Int
         get() = numericValue / 8 + 1
-
     override fun toString(): String {
         return "${file}${rank}"
     }

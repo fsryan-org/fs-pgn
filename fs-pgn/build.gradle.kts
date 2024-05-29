@@ -15,8 +15,7 @@ kotlin {
 
     if (shouldConfigureAndroid()) {
         androidTarget {
-            publishLibraryVariants(
-                "release")
+            publishLibraryVariants("release")
         }
     }
     if (shouldConfigureJvm()) {
