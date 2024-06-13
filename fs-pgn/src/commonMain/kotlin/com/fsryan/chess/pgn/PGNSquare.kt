@@ -27,19 +27,30 @@ interface PGNSquare {
 fun String.sq(): PGNSquare = PGNSquare(this)
 
 /**
+ * For consumers who need to vie the file of the square as a zero-based index
+ * @return the file index of the square (0 through 7)
+ */
+@JsExport
+inline fun PGNSquare.fileIdx(): Int = numericValue % 8
+
+/**
+ * For consumers who need to view the rank of the square as a zero-based index
+ * @return the rank index of the square (0 through 7)
+ */
+@JsExport
+inline fun PGNSquare.rankIdx(): Int = numericValue / 8
+
+/**
  * @return true if the square is light, false otherwise
  */
 @JsExport
-fun PGNSquare.isLight(): Boolean = when ((numericValue / 8) % 2 == 0) {
-    true -> numericValue % 2 == 0   // <-- ranks 1, 3, 5, 7 start on dark squares
-    false -> numericValue % 2 == 1  // <-- ranks 2, 4, 6, 8 start on light squares
-}
+inline fun PGNSquare.isLight(): Boolean = (fileIdx() + rankIdx()) % 2 == 1
 
 /**
  * @return true if the square is dark, false otherwise
  */
 @JsExport
-fun PGNSquare.isDark(): Boolean = !isLight()
+inline fun PGNSquare.isDark(): Boolean = !isLight()
 
 @JsExport
 fun PGNSquare.isOnSameDiagonal(other: PGNSquare): Boolean = abs(other.file - file) == abs(other.rank - rank)
